@@ -15,6 +15,10 @@ or use any of the items in the chest. Including when you use mods that allows fo
 - **Custom Chests**: Adds new custom chests with which automatically spawns and re-stock items.
 
 ## Changelog
+
+### v0.0.2
+- Added missing SurtlingCore to materials chest.
+
 ### v0.0.1
 - Initial release.
 
