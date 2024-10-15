@@ -257,6 +257,7 @@ namespace BrudvikStackedChest
                         "Sap",
                         "ShieldCore",
                         "Softtissue",
+                        "SurtlingCore",
                         "Tar",
                         "Thunderstone",
                         "YagluthDrop",
