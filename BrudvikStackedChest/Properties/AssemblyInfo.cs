@@ -7,10 +7,10 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("BrudvikStackedChest")]
 [assembly: AssemblyDescription("A mod for Valheim that enhances the build process of the game by adding custom chests that is automatically adding various build items when placed in the world.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Kjell Arne Brudvik - kjell.arne@brudvik.org")]
 [assembly: AssemblyProduct("BrudvikStackedChest")]
 [assembly: AssemblyCopyright("Copyright © 2024")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyTrademark("Kjell Arne Brudvik")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
@@ -31,6 +31,6 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.0.2.0")]
-[assembly: AssemblyFileVersion("0.0.2.0")]
+[assembly: AssemblyVersion("0.0.3.0")]
+[assembly: AssemblyFileVersion("0.0.3.0")]
 

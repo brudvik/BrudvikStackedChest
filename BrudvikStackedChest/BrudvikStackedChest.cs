@@ -27,7 +27,7 @@ namespace BrudvikStackedChest
         /// </summary>
         public const string PluginGUID = "com.jotunn.BrudvikStackedChest";
         public const string PluginName = "BrudvikStackedChest";
-        public const string PluginVersion = "0.0.2";
+        public const string PluginVersion = "0.0.3";
 
         /// <summary>
         /// List to store custom pieces (chests) added by the plugin.
@@ -58,7 +58,31 @@ namespace BrudvikStackedChest
             // Event handler for when a container checks for changes
             ContainerPatch.ContainerCheckForChangesPatched += HandleContainerCheckForChanges;
 
+            // Event handler for when a container is about to drop all items
+            ContainerPatch.ContainerDropAllItemsPatched += HandleContainerDropAllItemsPatched;
+
             Jotunn.Logger.LogInfo($"{PluginName} v{PluginVersion} has loaded!");
+        }
+
+        /// <summary>
+        /// This method handles the ContainerDropAllItemsPatched event.
+        /// It is triggered when the DropAllItems method of a Container is called.
+        /// </summary>
+        private void HandleContainerDropAllItemsPatched(object sender, ContainerDropAllItemsPatchEvent e)
+        {
+            // Check if the event argument or the container's name is null.
+            if (e?.Container?.name == null) return;
+
+            // Iterate through the list of custom pieces.
+            foreach (var piece in customPieces)
+            {
+                // Check if the container's name contains the name of the custom piece.
+                if (e.Container.name.Contains(piece.CustomPieceConfig.Name))
+                {
+                    // If a match is found, empty the container's inventory.
+                    e.Container.EmptyChest();
+                }
+            }
         }
 
         /// <summary>
@@ -439,6 +463,16 @@ namespace BrudvikStackedChest
                         "Wishbone",
                         "Wisp"
                     }
+                }
+            ));
+
+            customPieces.Add(customChestManager.AddCustomChest(
+                new CustomChestModel()
+                {
+                    Name = "BSEmptyChest",
+                    Description = "A empty chest, add items to make them last forever",
+                    Icon = "strg_010_round.png",
+                    Color = SharedUtils.ColorFromRGB(45, 45, 79, 0.8f)
                 }
             ));
 

@@ -60,7 +60,7 @@ namespace BrudvikStackedChest.Piece
                 SpawnItems = model.SpawnItems 
             };
 
-            //// Create a new custom piece with the specified name and base piece
+            // Create a new custom piece with the specified name and base piece
             var piece = new CustomPieceExtended(model.Name, "piece_chest", pieceConfig)
             {
                 Color = model.Color,

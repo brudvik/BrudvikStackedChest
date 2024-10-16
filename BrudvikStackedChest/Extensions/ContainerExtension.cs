@@ -74,5 +74,21 @@ namespace BrudvikStackedChest.Extensions
         {
             return container.GetInventory().GetAllItems().Count;
         }
+
+        /// <summary>
+        /// Empties all items from the container's inventory.
+        /// </summary>
+        /// <param name="container">The container to be emptied.</param>
+        public static void EmptyChest(this Container container)
+        {
+            // Retrieve the inventory of the container.
+            var inventory = container.GetInventory();
+
+            // Remove all items from the inventory.
+            inventory.RemoveAll();
+
+            // Save the state of the container to persist the changes.
+            container.Save();
+        }
     }
 }

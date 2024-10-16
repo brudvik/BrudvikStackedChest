@@ -64,6 +64,7 @@
     <Compile Include="Constants\DefaultValues.cs" />
     <Compile Include="Events\ContainerAwakePatchEvent.cs" />
     <Compile Include="Events\ContainerCheckForChangesPatchEvent.cs" />
+    <Compile Include="Events\ContainerDropAllItemsPatchEvent.cs" />
     <Compile Include="Extensions\ContainerExtension.cs" />
     <Compile Include="Extensions\Texture2dExtension.cs" />
     <Compile Include="Helpers\AssetUtilsExtended.cs" />
@@ -124,6 +125,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Assets\strg_039_round.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\strg_010_round.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <Content Include="Package\icon.png" />

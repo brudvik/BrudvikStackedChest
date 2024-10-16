@@ -58,28 +58,6 @@ namespace BrudvikStackedChest.Helpers
         /// <param name="scale">The scale of the icon.</param>
         private void AddIconToFront(Sprite iconSprite, Vector3 scale)
         {
-            //// Get the current GameObject of the piece
-            //GameObject current = this.Piece.gameObject;
-
-            //// Create a new GameObject for the icon
-            //GameObject iconObject = new GameObject("Icon");
-
-            //// Add a SpriteRenderer component to the icon GameObject
-            //SpriteRenderer spriteRenderer = iconObject.AddComponent<SpriteRenderer>();
-
-            //// Set the sprite to the provided icon sprite
-            //spriteRenderer.sprite = iconSprite;
-
-            //// Set the icon GameObject as a child of the current GameObject
-            //iconObject.transform.SetParent(current.transform);
-
-            //// Position the icon in front of the current GameObject
-            //// Adjust the position values as needed
-            //iconObject.transform.localPosition = new Vector3(0.20f, 0.5f, 0.48f);
-
-            //// Rescale the icon
-            //iconObject.transform.localScale = scale;
-
             // Create a new GameObject for the icon and set it as a child of the current GameObject
             GameObject iconObject = new GameObject("Icon", typeof(SpriteRenderer))
             {
@@ -102,13 +80,6 @@ namespace BrudvikStackedChest.Helpers
         /// <param name="columns">The number of columns.</param>
         public void SetRowsAndColumns(int rows, int columns)
         {
-            //// Access the Container component and set the number of columns and rows
-            //var container = this.Piece.GetComponent<Container>();
-            //if (container != null)
-            //{
-            //    container.m_width = columns;
-            //    container.m_height = rows;
-            //}
             // Access the Container component and set the number of columns and rows if it exists
             if (this.Piece.TryGetComponent<Container>(out var container))
             {
@@ -124,19 +95,6 @@ namespace BrudvikStackedChest.Helpers
         /// <param name="scale">The scale of the icon.</param>
         public void AddIconToChest(string iconPath, Vector3 scale)
         {
-            //// Check if the PluginName is set in the custom piece config
-            //// If it is, prepend the icon path with the PluginName
-            //if (this.CustomPieceConfig.PluginName != null)
-            //{
-            //    iconPath = $"{CustomPieceConfig.PluginName}.Assets.{iconPath}";
-            //}
-
-            //// Load the icon sprite from the specified path
-            //var iconSprite = AssetUtilsExtended.LoadTextureFromEmbeddedResource(iconPath).ConvertToSprite();
-
-            //// Add the icon to the front of the chest
-            //AddIconToFront(iconSprite, scale);
-
             // Prepend the icon path with the PluginName if it is set
             string iconPathWithPlugin = this.CustomPieceConfig.PluginName != null
                 ? $"{CustomPieceConfig.PluginName}.Assets.{iconPath}"

@@ -19,6 +19,11 @@ or use any of the items in the chest. Including when you use mods that allows fo
 
 ## Changelog
 
+### v0.0.3
+
+- Removed chests won't clutter the world anymore.
+- Added an empty chest, for when you want to store your own things.
+
 ### v0.0.2
 
 - Added missing SurtlingCore to materials chest.
