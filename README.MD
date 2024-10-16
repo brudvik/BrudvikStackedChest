@@ -1,5 +1,7 @@
 # BrudvikStackedChest
 
+![Display of the mod in use](https://raw.githubusercontent.com/brudvik/BrudvikStackedChest/refs/heads/master/mod-example-chests.png)
+
 ## Overview
 
 BrudvikStackedChest is a mod for Valheim that enhances the build process of the game by adding custom chests that is automatically adding various build items when placed
