@@ -21,6 +21,9 @@ namespace BrudvikStackedChest.Patches.Containers
         /// </summary>
         public static event EventHandler<ContainerCheckForChangesPatchEvent>? ContainerCheckForChangesPatched;
 
+        /// <summary>
+        /// Event triggered when the DropAllItems method of a Container instance is called.
+        /// </summary>
         public static event EventHandler<ContainerDropAllItemsPatchEvent>? ContainerDropAllItemsPatched;
 
         /// <summary>
