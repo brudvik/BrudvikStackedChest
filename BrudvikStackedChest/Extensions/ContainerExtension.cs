@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace BrudvikStackedChest.Extensions
 {
@@ -15,9 +16,21 @@ namespace BrudvikStackedChest.Extensions
         /// <param name="spawnItems">A list of item names to spawn in the container.</param>
         public static void SpawnInitialItems(this Container container, List<string> spawnItems)
         {
+            // Check if the container is placed in the game world. We need to check
+            // this before attempting to load the container's inventory. If the container
+            // is not placed, we cannot load the inventory.
+            if (!IsContainerPlaced(container))
+            {
+                return;
+            }
+
             // Load the container's inventory
             container.Load();
+
+            // Retrieve the inventory of the container.
             var inventory = container.GetInventory();
+            if (inventory == null) return;
+
             var existingItems = new HashSet<string>();
 
             // Collect existing items in the inventory and refill them to their maximum stack size
@@ -54,7 +67,10 @@ namespace BrudvikStackedChest.Extensions
         /// <param name="container">The container whose items should be refilled.</param>
         public static void RefillItemsToMax(this Container container)
         {
+            // Retrieve the inventory of the container.
             var inventory = container.GetInventory();
+            if (inventory == null) return;
+
             // Refill each item in the inventory to its maximum stack size
             foreach (var item in inventory.GetAllItems())
             {
@@ -72,7 +88,10 @@ namespace BrudvikStackedChest.Extensions
         /// <returns>The number of items in the container's inventory.</returns>
         public static int GetInventoryCount(this Container container)
         {
-            return container.GetInventory().GetAllItems().Count;
+            // Retrieve the inventory of the container.
+            var inventory = container.GetInventory();
+            if (inventory == null) return 0;
+            return inventory.GetAllItems().Count;
         }
 
         /// <summary>
@@ -83,12 +102,24 @@ namespace BrudvikStackedChest.Extensions
         {
             // Retrieve the inventory of the container.
             var inventory = container.GetInventory();
+            if (inventory == null) return;
 
             // Remove all items from the inventory.
             inventory.RemoveAll();
 
             // Save the state of the container to persist the changes.
             container.Save();
+        }
+
+        /// <summary>
+        /// Check if the container is actually placed in the game world.
+        /// </summary>
+        /// <param name="container"></param>
+        /// <returns></returns>
+        private static bool IsContainerPlaced(Container container)
+        {
+            // Check if the container has a valid position in the game world
+            return container.transform != null && container.transform.position != Vector3.zero;
         }
     }
 }

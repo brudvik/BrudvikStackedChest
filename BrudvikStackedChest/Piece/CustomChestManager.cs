@@ -65,7 +65,7 @@ namespace BrudvikStackedChest.Piece
             {
                 Color = model.Color,
                 Icon = model.Icon,
-                Tooltip = model.Description,
+                Tooltip = model.DisplayName,
                 Rows = 8,
                 Columns = 8
             };

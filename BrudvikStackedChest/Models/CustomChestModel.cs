@@ -7,6 +7,7 @@ namespace BrudvikStackedChest.Models
     {
 
         public string Name { get; set; } = "BrudvikStackedChest";
+        public string DisplayName { get; set; } = "Brudvik Stacked Chest";
         public string Description { get; set; } = "BrudvikStackedChestDesc";
         public string Icon { get; set; } = "strg_049_round.png";
         public List<string> SpawnItems { get; set; } = new List<string>();

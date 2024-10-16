@@ -3,6 +3,7 @@ using BrudvikStackedChest.Extensions;
 using BrudvikStackedChest.Piece;
 using Jotunn.Entities;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace BrudvikStackedChest.Helpers
 {
@@ -113,9 +114,15 @@ namespace BrudvikStackedChest.Helpers
         /// <param name="text">The tooltip text.</param>
         public void SetTooltip(string text)
         {
+            // Access the Container component and set the name.
+            if (this.Piece.TryGetComponent<Container>(out var container))
+            {
+                container.m_name = text;
+            }
+
             // Check if HoverText component already exists, if not, add it
             var hoverTextComponent = this.Piece.gameObject.GetComponent<HoverText>() ?? this.Piece.gameObject.AddComponent<HoverText>();
-
+           
             // Set the hover text
             hoverTextComponent.m_text = text;
         }

@@ -19,6 +19,12 @@ or use any of the items in the chest. Including when you use mods that allows fo
 
 ## Changelog
 
+### v0.0.4
+
+- Fixed problem with setting correct hover text on chests.
+- Fixed SpawnItems issue when new chests where created, but not yet placed.
+- Removed Awake patch call, as it's no longer needed.
+
 ### v0.0.3
 
 - Removed chests won't clutter the world anymore.

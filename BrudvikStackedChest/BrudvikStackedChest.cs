@@ -27,7 +27,7 @@ namespace BrudvikStackedChest
         /// </summary>
         public const string PluginGUID = "com.jotunn.BrudvikStackedChest";
         public const string PluginName = "BrudvikStackedChest";
-        public const string PluginVersion = "0.0.3";
+        public const string PluginVersion = "0.0.4";
 
         /// <summary>
         /// List to store custom pieces (chests) added by the plugin.
@@ -51,9 +51,6 @@ namespace BrudvikStackedChest
             // Apply Harmony patches using the plugin's GUID
             var harmony = new Harmony(PluginGUID);
             harmony.PatchAll();
-
-            // Event handler for when a container is awakened
-            ContainerPatch.ContainerAwakePatched += HandleContainerAwake;
 
             // Event handler for when a container checks for changes
             ContainerPatch.ContainerCheckForChangesPatched += HandleContainerCheckForChanges;
@@ -81,24 +78,6 @@ namespace BrudvikStackedChest
                 {
                     // If a match is found, empty the container's inventory.
                     e.Container.EmptyChest();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Handles the ContainerAwakePatched event.
-        /// Spawns initial items in the container if it matches the custom piece name and hasn't spawned items yet.
-        /// </summary>
-        private void HandleContainerAwake(object sender, ContainerAwakePatchEvent e)
-        {
-            if (e?.Container?.name == null) return;
-
-            foreach (var piece in customPieces)
-            {
-                if (e.Container.name.Contains(piece.CustomPieceConfig.Name) && !piece.Spawned)
-                {
-                    e.Container.SpawnInitialItems(piece.CustomPieceConfig.SpawnItems);
-                    piece.Spawned = true;
                 }
             }
         }
@@ -134,6 +113,7 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSWoodChest",
+                    DisplayName = "Wood Chest",
                     Description = "A chest filled with wood materials",
                     Icon = "strg_049_round.png",
                     Color = SharedUtils.ColorFromRGB(0, 0, 0, 0.8f),
@@ -156,6 +136,7 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSStoneChest",
+                    DisplayName = "Stone Chest",
                     Description = "A chest filled with stone materials",
                     Icon = "strg_009_round.png",
                     Color = SharedUtils.ColorFromRGB(135, 135, 135, 0.8f),
@@ -176,6 +157,7 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSMetalChest",
+                    DisplayName = "Metal Chest",
                     Description = "A chest filled with metal materials",
                     Icon = "strg_082_round.png",
                     Color = SharedUtils.ColorFromRGB(163, 34, 24, 0.8f),
@@ -202,6 +184,7 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSFoodChest",
+                    DisplayName = "Food Chest",
                     Description = "A chest filled with food ingredients",
                     Icon = "strg_046_round.png",
                     Color = SharedUtils.ColorFromRGB(112, 81, 44, 0.8f),
@@ -257,6 +240,7 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSMaterialChest",
+                    DisplayName = "Material Chest",
                     Description = "A chest filled with various materials",
                     Icon = "strg_088_round.png",
                     Color = SharedUtils.ColorFromRGB(44, 47, 112, 0.8f),
@@ -294,6 +278,7 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSAnimalChest",
+                    DisplayName = "Animal Chest",
                     Description = "A chest filled with various animal materials",
                     Icon = "strg_012_round.png",
                     Color = SharedUtils.ColorFromRGB(181, 178, 27, 0.8f),
@@ -327,6 +312,7 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSSeedChest",
+                    DisplayName = "Seed Chest",
                     Description = "A chest filled with various seeds",
                     Icon = "strg_029_round.png",
                     Color = SharedUtils.ColorFromRGB(27, 181, 89, 0.8f),
@@ -349,6 +335,7 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSTrophyChest",
+                    DisplayName = "Trophy Chest",
                     Description = "A chest filled with trophies",
                     Icon = "strg_091_round.png",
                     Color = SharedUtils.ColorFromRGB(21, 122, 117, 0.8f),
@@ -422,6 +409,7 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSTreasureChest",
+                    DisplayName = "Treasure Chest",
                     Description = "A chest filled with treasures and riches",
                     Icon = "strg_098_round.png",
                     Color = SharedUtils.ColorFromRGB(228, 237, 95, 0.8f),
@@ -440,6 +428,7 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSToolsChest",
+                    DisplayName = "Tools Chest",
                     Description = "A chest filled with tools",
                     Icon = "strg_039_round.png",
                     Color = SharedUtils.ColorFromRGB(51, 21, 122, 0.8f),
@@ -470,6 +459,7 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSEmptyChest",
+                    DisplayName = "Everlasting Chest",
                     Description = "A empty chest, add items to make them last forever",
                     Icon = "strg_010_round.png",
                     Color = SharedUtils.ColorFromRGB(45, 45, 79, 0.8f)

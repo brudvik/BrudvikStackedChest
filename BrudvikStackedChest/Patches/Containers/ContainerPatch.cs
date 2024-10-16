@@ -12,11 +12,6 @@ namespace BrudvikStackedChest.Patches.Containers
     public class ContainerPatch 
     {
         /// <summary>
-        /// Event triggered when the Awake method of a Container instance is called.
-        /// </summary>
-        public static event EventHandler<ContainerAwakePatchEvent>? ContainerAwakePatched;
-
-        /// <summary>
         /// Event triggered when the CheckForChanges method of a Container instance is called.
         /// </summary>
         public static event EventHandler<ContainerCheckForChangesPatchEvent>? ContainerCheckForChangesPatched;
@@ -25,29 +20,6 @@ namespace BrudvikStackedChest.Patches.Containers
         /// Event triggered when the DropAllItems method of a Container instance is called.
         /// </summary>
         public static event EventHandler<ContainerDropAllItemsPatchEvent>? ContainerDropAllItemsPatched;
-
-        /// <summary>
-        /// Harmony patch for the Awake method of the Container class.
-        /// This patch triggers the ContainerAwakePatched event after the original Awake method is executed.
-        /// </summary>
-        [HarmonyPatch(typeof(Container), "Awake")]
-        public static class ContainerAwakePatch
-        {
-            /// <summary>
-            /// Postfix method that is called after the original Awake method of the Container class.
-            /// </summary>
-            /// <param name="__instance">The instance of the Container class.</param>
-            static void Postfix(Container __instance)
-            {
-                if (__instance != null)
-                {
-                    ContainerAwakePatched?.Invoke(null, new ContainerAwakePatchEvent()
-                    {
-                        Container = __instance
-                    });
-                }
-            }
-        }
 
         /// <summary>
         /// Harmony patch for the CheckForChanges method of the Container class.
