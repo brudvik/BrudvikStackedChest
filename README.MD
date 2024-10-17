@@ -8,6 +8,23 @@ BrudvikStackedChest is a mod for Valheim that enhances the build process of the 
 in the world. Each chest has a unique color and icon, and the contents will automatically be re-stocked when you either take something out of the chests
 or use any of the items in the chest. Including when you use mods that allows for building from chests.
 
+## Thank you, community!
+
+As a thank you for the community in assisting me to learn about mod development in Valheim, I figured that the least I could do was to share the source of my findings and the result of the learning process. The mod itself isn’t that great, it was more about the adventure in reaching the goal. A working mod, that could assist me in what I love the most – simply exploring and building. And yes, I know it could be done using “debugmode” – but that takes away the fun in exploring a new world, though I hate grinding – thus this mod. Basically, create various chests that spawns in materials that never runs out.
+
+Now this mod showcases a few things – some are simple, some require a bit more understanding of C# - but all very much learnable:
+
+-	The use of Harmony patching
+-	The use of events
+-	The use of extension methods
+-	The use of Sprites
+-	The use of embedded resources
+-	The use of extended classes to add new methods
+
+Regarding the actual mod – it creates a custom chest, based on the “piece_chest” prefab. The code gives you the ability to change the color of the chest, add an icon and place it in front of the chest, adjust the tooltip and adjust the number of columns and rows. Perhaps ordeal to experienced mod-developers, but somethings that I had to learn by putting together various examples and a lot of trial-and-error.
+
+The Harmony patches focuses on altering two methods of the original “Container” class. The “CheckForChanges” method and the “DropAllItems” method. The first will alter what happens after the method is performed, the other will alter the method before it’s performed. Showcasing how this can be implemented to achieve different things. Instead of cluttering the methods, those patches instead issues events, which can then be handled elsewhere.
+
 ## Installation (manual)
 
 1. Download the latest release of the mod from the [releases page](https://github.com/brudvik/BrudvikStackedChest/releases).
