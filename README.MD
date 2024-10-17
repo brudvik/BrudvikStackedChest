@@ -8,24 +8,6 @@ BrudvikStackedChest is a mod for Valheim that enhances the build process of the 
 in the world. Each chest has a unique color and icon, and the contents will automatically be re-stocked when you either take something out of the chests
 or use any of the items in the chest. Including when you use mods that allows for building from chests.
 
-## Chests
-
-The everlasting chests available for build are:
-
-- Wood Chest (wood materials)
-- Stone Chest (stone materials)
-- Metal Chest (metal materials)
-- Food Chest (food materials)
-- Material Chest (various build materials)
-- Animal Chest (various animal build materials)
-- Seed Chest (seeds)
-- Trophy Chest (all the trophies)
-- Treasure Chest (treasures)
-- Tools Chest (barber kit, megingjord..)
-- Empty Chest (add what you want)
-
-When you decide to remove a chest, all the contents will be gone - so it'll be safe to move the chests around. However, if you do it on the empty chest, be aware that all the contents will also be gone.
-
 ## Thank you, community!
 
 As a thank you for the community in assisting me to learn about mod development in Valheim, I figured that the least I could do was to share the source of my findings and the result of the learning process. The mod itself isn’t that great, it was more about the adventure in reaching the goal. A working mod, that could assist me in what I love the most – simply exploring and building. And yes, I know it could be done using “debugmode” – but that takes away the fun in exploring a new world, though I hate grinding – thus this mod. Basically, create various chests that spawns in materials that never runs out.
@@ -54,6 +36,22 @@ The Harmony patches focus on altering two methods of the original “Container�
 ## Features
 
 - **Custom Chests**: Adds new custom chests with which automatically spawns and re-stock items.
+
+The everlasting chests available for build are:
+
+- Wood Chest (wood materials)
+- Stone Chest (stone materials)
+- Metal Chest (metal materials)
+- Food Chest (food materials)
+- Material Chest (various build materials)
+- Animal Chest (various animal build materials)
+- Seed Chest (seeds)
+- Trophy Chest (all the trophies)
+- Treasure Chest (treasures)
+- Tools Chest (barber kit, megingjord..)
+- Empty Chest (add what you want)
+
+When you decide to remove a chest, all the contents will be gone - so it'll be safe to move the chests around. However, if you do it on the empty chest, be aware that all the contents will also be gone.
 
 ## Compilation
 
