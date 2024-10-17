@@ -12,8 +12,9 @@ or use any of the items in the chest. Including when you use mods that allows fo
 
 As a thank you for the community in assisting me to learn about mod development in Valheim, I figured that the least I could do was to share the source of my findings and the result of the learning process. The mod itself isn’t that great, it was more about the adventure in reaching the goal. A working mod, that could assist me in what I love the most – simply exploring and building. And yes, I know it could be done using “debugmode” – but that takes away the fun in exploring a new world, though I hate grinding – thus this mod. Basically, create various chests that spawns in materials that never runs out.
 
-Now this mod showcases a few things – some are simple, some require a bit more understanding of C# - but all very much learnable:
+Now this mod showcases a few things – some are simple, some require a bit more understanding of C# - but all very much learnable. The MOD is based on the [JotunnModStub](https://github.com/Valheim-Modding/JotunnModStub) project:
 
+- The use of JVL (Jötunn, the Valheim Library) 
 -	The use of Harmony patching
 -	The use of events
 -	The use of extension methods
