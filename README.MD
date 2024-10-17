@@ -23,7 +23,7 @@ Now this mod showcases a few things – some are simple, some require a bit more
 
 Regarding the actual mod – it creates a custom chest, based on the “piece_chest” prefab. The code gives you the ability to change the color of the chest, add an icon and place it in front of the chest, adjust the tooltip and adjust the number of columns and rows. Perhaps ordeal to experienced mod-developers, but somethings that I had to learn by putting together various examples and a lot of trial-and-error.
 
-The Harmony patches focuses on altering two methods of the original “Container” class. The “CheckForChanges” method and the “DropAllItems” method. The first will alter what happens after the method is performed, the other will alter the method before it’s performed. Showcasing how this can be implemented to achieve different things. Instead of cluttering the methods, those patches instead issues events, which can then be handled elsewhere.
+The Harmony patches focus on altering two methods of the original “Container” class. The “CheckForChanges” method and the “DropAllItems” method. The first will alter what happens after the method is performed, the other will alter the method before it’s performed. Showcasing how this can be implemented to achieve different things. Instead of cluttering the methods, those patches instead issues events, which can then be handled elsewhere.
 
 ## Installation (manual)
 
