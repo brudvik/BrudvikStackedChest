@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\JotunnLib.2.20.3\build\JotunnLib.props" Condition="Exists('..\packages\JotunnLib.2.20.3\build\JotunnLib.props')" />
   <PropertyGroup>
@@ -162,7 +162,7 @@
     <Copy SourceFiles="$(VALHEIM_MANAGED)/SoftReferenceableAssets.dll" DestinationFolder="$(UNITY_FOLDER)/Assets/Assemblies" />
   </Target>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="JotunnPostBuildTaskWin" Condition="'$(OS)' == 'Windows_NT'">
+  <Target Name="JotunnPostBuildTaskWin" Condition="false">
     <Exec Command="powershell.exe -ExecutionPolicy RemoteSigned -File &quot;$(SolutionDir)publish.ps1&quot; -Target &quot;$(ConfigurationName)&quot; -TargetPath &quot;$(TargetDir.TrimEnd('\'))&quot; -TargetAssembly &quot;$(TargetFileName)&quot; -ValheimPath &quot;$(VALHEIM_INSTALL.TrimEnd('\'))&quot; -DeployPath &quot;$(MOD_DEPLOYPATH.TrimEnd('\'))&quot; -ProjectPath &quot;$(ProjectDir.TrimEnd('\'))&quot; " />
     <CallTarget Targets="CopyToUnity" Condition="Exists('$(UNITY_FOLDER)')" />
   </Target>
