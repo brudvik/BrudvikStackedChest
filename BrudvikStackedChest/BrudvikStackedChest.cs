@@ -27,7 +27,7 @@ namespace BrudvikStackedChest
         /// </summary>
         public const string PluginGUID = "com.jotunn.BrudvikStackedChest";
         public const string PluginName = "BrudvikStackedChest";
-        public const string PluginVersion = "0.0.4";
+        public const string PluginVersion = "0.0.6";
 
         /// <summary>
         /// List to store custom pieces (chests) added by the plugin.
@@ -148,7 +148,8 @@ namespace BrudvikStackedChest
                         "Stone",
                         "Grausten",
                         "SharpeningStone",
-                        "CeramicPlate"
+                        "CeramicPlate",
+                        "Ite"
                     }
                 }
             ));
@@ -175,7 +176,15 @@ namespace BrudvikStackedChest
                         "CharredCogwheel",
                         "Flametal",
                         "FlametalNew",
-                        "MechanicalSpring"
+                        "MechanicalSpring",
+                        "IronScrap",
+                        "CopperScrap",
+                        "CopperOre",
+                        "TinOre",
+                        "IronOre",
+                        "SilverOre",
+                        "BlackMetalScrap",
+                        "FlametalOre"
                     }
                 }
             ));
@@ -231,7 +240,29 @@ namespace BrudvikStackedChest
                         "VoltureEgg",
                         "VoltureMeat",
                         "WolfMeat",
-                        "YmirRemains"
+                        "YmirRemains",
+                        "SeekerMeat",
+                        "BugMeat",
+                        "NeckTail",
+                        "MushroomYellow",
+                        "FishAnglerRaw",
+                        "Fiddlehead",
+                        "CookedMeat",
+                        "CookedDeerMeat",
+                        "CookedLoxMeat",
+                        "CookedWolfMeat",
+                        "FishCooked",
+                        "SerpentMeatCooked",
+                        "CarrotSoup",
+                        "TurnipStew",
+                        "OnionSoup",
+                        "BloodPudding",
+                        "Eyescream",
+                        "FishWraps",
+                        "BoarJerky",
+                        "WolfJerky",
+                        "WolfMeatSkewer",
+                        "NeckTailGrilled"
                     }
                 }
             ));
@@ -269,7 +300,22 @@ namespace BrudvikStackedChest
                         "Tar",
                         "Thunderstone",
                         "YagluthDrop",
-                        "Wisp"
+                        "Wisp",
+                        "BellFragment",
+                        "DvergrNeedle",
+                        "GemstoneBlue",
+                        "GemstoneGreen",
+                        "GemstoneRed",
+                        "DvergrKeyFragment",
+                        "SealbreakersKey",
+                        "FreezeGland",
+                        "GiantBloodSack",
+                        "HardAntler",
+                        "ProustitePowder",
+                        "PungentPebbles",
+                        "DyrnwynBladeFragment",
+                        "DyrnwynHiltFragment",
+                        "DyrnwynTipFragment"
                     }
                 }
             ));
@@ -303,7 +349,13 @@ namespace BrudvikStackedChest
                         "TrollHide",
                         "WolfFang",
                         "WolfPelt",
-                        "WitheredBone"
+                        "WitheredBone",
+                        "HareHide",
+                        "SeekerHide",
+                        "AsksvinHide",
+                        "WolfClaw",
+                        "ChickenBone",
+                        "WolfHairBundle"
                     }
                 }
             ));
@@ -326,7 +378,11 @@ namespace BrudvikStackedChest
                         "OnionSeeds",
                         "PineCone",
                         "TurnipSeeds",
-                        "VineberrySeeds"
+                        "VineberrySeeds",
+                        "FirCone",
+                        "Sap",
+                        "BarleyWild",
+                        "FlaxWild"
                     }
                 }
             ));
@@ -400,7 +456,9 @@ namespace BrudvikStackedChest
                         "TrophyUlv",
                         "TrophyVolture",
                         "TrophyWraith",
-                        "TrophyWolf"
+                        "TrophyWolf",
+                        "TrophyTheElder",
+                        "TrophyCharredTwitcher"
                     }
                 }
             ));
@@ -419,7 +477,15 @@ namespace BrudvikStackedChest
                         "AmberPearl",
                         "Coins",
                         "Ruby",
-                        "SilverNecklace"
+                        "SilverNecklace",
+                        "GemstoneBlue",
+                        "GemstoneGreen",
+                        "GemstoneRed",
+                        "DragonEgg",
+                        "GoblinTotem",
+                        "HildirKey_forestcrypt",
+                        "HildirKey_mountaincave",
+                        "HildirKey_plainsfortress"
                     }
                 }
             ));
@@ -450,7 +516,21 @@ namespace BrudvikStackedChest
                         "Lantern",
                         "SpearChitin",
                         "Wishbone",
-                        "Wisp"
+                        "Wisp",
+                        "Hammer",
+                        "Hoe",
+                        "Cultivator",
+                        "Torch",
+                        "PickaxeAntler",
+                        "PickaxeBronze",
+                        "PickaxeIron",
+                        "PickaxeBlackMetal",
+                        "SaddleLox",
+                        "Demister",
+                        "DvergrKey",
+                        "Tankard",
+                        "TankardOdin",
+                        "Sparkler"
                     }
                 }
             ));
