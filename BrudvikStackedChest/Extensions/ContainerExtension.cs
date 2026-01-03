@@ -51,7 +51,9 @@ namespace BrudvikStackedChest.Extensions
                         var itemDrop = prefab.GetComponent<ItemDrop>();
                         if (itemDrop != null)
                         {
-                            inventory.AddItem(itemDrop.m_itemData.m_dropPrefab, itemDrop.m_itemData.m_shared.m_maxStackSize);
+                            // Use the prefab name directly instead of m_dropPrefab to avoid null reference
+                            // issues with items like fish that have special handling
+                            inventory.AddItem(prefab, itemDrop.m_itemData.m_shared.m_maxStackSize);
                         }
                     }
                 }
