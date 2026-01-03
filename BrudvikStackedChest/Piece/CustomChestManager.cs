@@ -66,8 +66,8 @@ namespace BrudvikStackedChest.Piece
                 Color = model.Color,
                 Icon = model.Icon,
                 Tooltip = model.DisplayName,
-                Rows = 8,
-                Columns = 8
+                Rows = model.Rows,
+                Columns = model.Columns
             };
 
             // Apply the properties to the custom piece

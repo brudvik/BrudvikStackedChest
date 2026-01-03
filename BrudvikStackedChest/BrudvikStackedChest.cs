@@ -27,7 +27,7 @@ namespace BrudvikStackedChest
         /// </summary>
         public const string PluginGUID = "com.jotunn.BrudvikStackedChest";
         public const string PluginName = "BrudvikStackedChest";
-        public const string PluginVersion = "0.0.6";
+        public const string PluginVersion = "0.1.0";
 
         /// <summary>
         /// List to store custom pieces (chests) added by the plugin.
@@ -197,6 +197,7 @@ namespace BrudvikStackedChest
                     Description = "A chest filled with food ingredients",
                     Icon = "strg_046_round.png",
                     Color = SharedUtils.ColorFromRGB(112, 81, 44, 0.8f),
+                    Rows = 10,
                     SpawnItems = new List<string>
                     {
                         "AskBladder",
@@ -531,6 +532,219 @@ namespace BrudvikStackedChest
                         "Tankard",
                         "TankardOdin",
                         "Sparkler"
+                    }
+                }
+            ));
+
+            customPieces.Add(customChestManager.AddCustomChest(
+                new CustomChestModel()
+                {
+                    Name = "BSArmorChest",
+                    DisplayName = "Armor Chest",
+                    Description = "A chest filled with armor sets from all tiers",
+                    Icon = "strg_014_round.png",
+                    Color = SharedUtils.ColorFromRGB(120, 80, 40, 0.8f),
+                    SpawnItems = new List<string>
+                    {
+                        // Leather Tier
+                        "HelmetLeather",
+                        "ArmorLeatherChest",
+                        "ArmorLeatherLegs",
+                        "CapeDeerHide",
+                        // Troll Tier
+                        "HelmetTrollLeather",
+                        "ArmorTrollLeatherChest",
+                        "ArmorTrollLeatherLegs",
+                        "CapeTrollHide",
+                        // Bronze Tier
+                        "HelmetBronze",
+                        "ArmorBronzeChest",
+                        "ArmorBronzeLegs",
+                        // Iron Tier
+                        "HelmetIron",
+                        "ArmorIronChest",
+                        "ArmorIronLegs",
+                        // Wolf/Silver Tier
+                        "HelmetDrake",
+                        "ArmorWolfChest",
+                        "ArmorWolfLegs",
+                        "CapeWolf",
+                        // Padded Tier
+                        "HelmetPadded",
+                        "ArmorPaddedCuirass",
+                        "ArmorPaddedGreaves",
+                        "CapeLinen",
+                        "CapeLox",
+                        // Carapace Tier
+                        "HelmetCarapace",
+                        "ArmorCarapaceChest",
+                        "ArmorCarapaceLegs",
+                        "CapeFeather",
+                        // Flametal Tier
+                        "HelmetFlametal",
+                        "ArmorFlametalChest",
+                        "ArmorFlametalLegs",
+                        "CapeAsh",
+                        // Mage Tier
+                        "HelmetMage",
+                        "ArmorMageChest",
+                        "ArmorMageLegs",
+                        // Fenris Tier
+                        "HelmetFenring",
+                        "ArmorFenringChest",
+                        "ArmorFenringLegs",
+                        // Root Tier
+                        "HelmetRoot",
+                        "ArmorRootChest",
+                        "ArmorRootLegs",
+                        // Misc Capes
+                        "CapeOdin",
+                        "CapeAsksvin"
+                    }
+                }
+            ));
+
+            customPieces.Add(customChestManager.AddCustomChest(
+                new CustomChestModel()
+                {
+                    Name = "BSWeaponChest",
+                    DisplayName = "Weapon Chest",
+                    Description = "A chest filled with weapons from all biomes",
+                    Icon = "strg_032_round.png",
+                    Color = SharedUtils.ColorFromRGB(180, 50, 50, 0.8f),
+                    Rows = 10,
+                    Columns = 8,
+                    SpawnItems = new List<string>
+                    {
+                        // Swords
+                        "SwordBronze",
+                        "SwordIron",
+                        "SwordIronFire",
+                        "SwordSilver",
+                        "SwordBlackmetal",
+                        "SwordMistwalker",
+                        "SwordNiedhogg",
+                        "SwordDyrnwyn",
+                        // Axes
+                        "AxeFlint",
+                        "AxeBronze",
+                        "AxeIron",
+                        "AxeBlackMetal",
+                        "AxeJotunBane",
+                        // Maces
+                        "MaceBronze",
+                        "MaceIron",
+                        "MaceSilver",
+                        "MaceNeedle",
+                        // Atgeirs
+                        "AtgeirBronze",
+                        "AtgeirIron",
+                        "AtgeirBlackmetal",
+                        "AtgeirHimminAfl",
+                        // Spears
+                        "SpearFlint",
+                        "SpearBronze",
+                        "SpearElderbark",
+                        "SpearWolfFang",
+                        "SpearCarapace",
+                        // Knives
+                        "KnifeFlint",
+                        "KnifeCopper",
+                        "KnifeButcher",
+                        "KnifeBlackMetal",
+                        "KnifeSkollAndHati",
+                        // Bows
+                        "Bow",
+                        "BowFineWood",
+                        "BowHuntsman",
+                        "BowDraugrFang",
+                        "BowSpineSnap",
+                        "BowAshlands",
+                        // Crossbows
+                        "CrossbowArbalest",
+                        // Staffs
+                        "StaffFireball",
+                        "StaffIceShards",
+                        "StaffShield",
+                        "StaffSkeleton",
+                        "StaffRedTroll",
+                        "StaffGreenRoots",
+                        // Arrows
+                        "ArrowWood",
+                        "ArrowFlint",
+                        "ArrowBronze",
+                        "ArrowIron",
+                        "ArrowSilver",
+                        "ArrowObsidian",
+                        "ArrowPoison",
+                        "ArrowFrost",
+                        "ArrowFire",
+                        "ArrowNeedle",
+                        "ArrowCarapace",
+                        // Bolts
+                        "BoltBone",
+                        "BoltIron",
+                        "BoltBlackmetal",
+                        "BoltCarapace",
+                        // Shields
+                        "ShieldWood",
+                        "ShieldWoodTower",
+                        "ShieldBronzeBuckler",
+                        "ShieldBanded",
+                        "ShieldIronTower",
+                        "ShieldSilver",
+                        "ShieldBlackmetal",
+                        "ShieldBlackmetalTower",
+                        "ShieldCarapace",
+                        "ShieldCarapaceBuckler",
+                        "ShieldFlametal",
+                        "ShieldFlametalTower"
+                    }
+                }
+            ));
+
+            customPieces.Add(customChestManager.AddCustomChest(
+                new CustomChestModel()
+                {
+                    Name = "BSPotionChest",
+                    DisplayName = "Potion Chest",
+                    Description = "A chest filled with meads and potions",
+                    Icon = "strg_004_round.png",
+                    Color = SharedUtils.ColorFromRGB(200, 100, 200, 0.8f),
+                    SpawnItems = new List<string>
+                    {
+                        // Health Meads
+                        "MeadHealthMinor",
+                        "MeadHealthMedium",
+                        "MeadHealthMajor",
+                        // Stamina Meads
+                        "MeadStaminaMinor",
+                        "MeadStaminaMedium",
+                        "MeadStaminaLingering",
+                        // Eitr Meads
+                        "MeadEitrMinor",
+                        "MeadEitrMedium",
+                        "MeadEitrLingering",
+                        // Resistance Meads
+                        "MeadFrostResist",
+                        "MeadPoisonResist",
+                        "MeadBugRepellent",
+                        // Tasty Mead
+                        "MeadTasty",
+                        // Bases for brewing
+                        "MeadBaseHealthMinor",
+                        "MeadBaseHealthMedium",
+                        "MeadBaseHealthMajor",
+                        "MeadBaseStaminaMinor",
+                        "MeadBaseStaminaMedium",
+                        "MeadBaseStaminaLingering",
+                        "MeadBaseEitrMinor",
+                        "MeadBaseEitrMedium",
+                        "MeadBaseEitrLingering",
+                        "MeadBaseFrostResist",
+                        "MeadBasePoisonResist",
+                        "MeadBaseBugRepellent",
+                        "MeadBaseTasty"
                     }
                 }
             ));

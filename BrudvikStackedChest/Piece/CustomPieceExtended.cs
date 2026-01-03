@@ -24,6 +24,7 @@ namespace BrudvikStackedChest.Helpers
         public string Tooltip { get; set; }
         public int Rows { get; set; }
         public int Columns { get; set; }
+        public bool EnableGlow { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomPieceExtended"/> class.
@@ -40,7 +41,8 @@ namespace BrudvikStackedChest.Helpers
             this.Icon = string.Empty; 
             this.Tooltip = string.Empty;
             this.Rows = 8; 
-            this.Columns = 8; 
+            this.Columns = 8;
+            this.EnableGlow = true;
         }
 
         // Additional methods to apply the properties
@@ -50,6 +52,11 @@ namespace BrudvikStackedChest.Helpers
             AddIconToChest(this.Icon, DefaultValues.ChestIconScale);
             SetTooltip(this.Tooltip);
             SetRowsAndColumns(this.Rows, this.Columns);
+            
+            if (this.EnableGlow)
+            {
+                AddGlowEffect(this.Color);
+            }
         }
 
         /// <summary>
@@ -148,6 +155,26 @@ namespace BrudvikStackedChest.Helpers
                     renderer.material = newMaterial;
                 }
             }
+        }
+
+        /// <summary>
+        /// Adds a subtle glow effect to the chest using a point light.
+        /// </summary>
+        /// <param name="color">The color of the glow.</param>
+        private void AddGlowEffect(Color color)
+        {
+            // Create a new GameObject for the glow light
+            GameObject glowObject = new GameObject("GlowLight");
+            glowObject.transform.parent = this.Piece.gameObject.transform;
+            glowObject.transform.localPosition = new Vector3(0f, 0.5f, 0f);
+
+            // Add a point light component
+            Light glowLight = glowObject.AddComponent<Light>();
+            glowLight.type = LightType.Point;
+            glowLight.color = new Color(color.r, color.g, color.b, 1f);
+            glowLight.intensity = 0.5f;
+            glowLight.range = 2f;
+            glowLight.shadows = LightShadows.None;
         }
     }
 }
