@@ -65,7 +65,6 @@ namespace BrudvikStackedChest.Extensions
 
         /// <summary>
         /// Refills all items in the container to their maximum stack size.
-        /// Spawns particle effects when items are refilled.
         /// </summary>
         /// <param name="container">The container whose items should be refilled.</param>
         public static void RefillItemsToMax(this Container container)
@@ -74,22 +73,13 @@ namespace BrudvikStackedChest.Extensions
             var inventory = container.GetInventory();
             if (inventory == null) return;
 
-            bool itemsRefilled = false;
-
             // Refill each item in the inventory to its maximum stack size
             foreach (var item in inventory.GetAllItems())
             {
                 if (item.m_stack < item.m_shared.m_maxStackSize)
                 {
                     item.m_stack = item.m_shared.m_maxStackSize;
-                    itemsRefilled = true;
                 }
-            }
-
-            // Spawn particle effect if items were refilled
-            if (itemsRefilled)
-            {
-                SpawnRefillEffect(container);
             }
 
             // Save the container's state
@@ -135,29 +125,6 @@ namespace BrudvikStackedChest.Extensions
         {
             // Check if the container has a valid position in the game world
             return container.transform != null && container.transform.position != Vector3.zero;
-        }
-
-        /// <summary>
-        /// Spawns a subtle particle effect when items are refilled in the container.
-        /// </summary>
-        /// <param name="container">The container where the effect should spawn.</param>
-        private static void SpawnRefillEffect(Container container)
-        {
-            if (container == null || container.transform == null) return;
-
-            // Try to find an existing sparkle effect in the game to instantiate
-            var effectPrefab = ZNetScene.instance?.GetPrefab("vfx_offering");
-            if (effectPrefab != null)
-            {
-                var position = container.transform.position + new Vector3(0f, 0.5f, 0f);
-                var effect = UnityEngine.Object.Instantiate(effectPrefab, position, Quaternion.identity);
-                
-                // Auto-destroy the effect after a short duration
-                if (effect != null)
-                {
-                    UnityEngine.Object.Destroy(effect, 2f);
-                }
-            }
         }
     }
 }
