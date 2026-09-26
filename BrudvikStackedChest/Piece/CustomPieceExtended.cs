@@ -171,10 +171,13 @@ namespace BrudvikStackedChest.Helpers
             // Add a point light component
             Light glowLight = glowObject.AddComponent<Light>();
             glowLight.type = LightType.Point;
-            glowLight.color = new Color(color.r, color.g, color.b, 1f);
-            glowLight.intensity = 0.5f;
+            glowLight.color = ChestEffects.GetGlowColor(color);
+            glowLight.intensity = ChestEffects.BaseGlowIntensity;
             glowLight.range = 2f;
             glowLight.shadows = LightShadows.None;
+
+            // Switches the light off at a distance like the game's own lights, so bases full of chests stay fast.
+            glowObject.AddComponent<LightLod>();
         }
     }
 }

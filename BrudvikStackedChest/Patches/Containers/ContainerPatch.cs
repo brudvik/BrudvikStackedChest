@@ -22,6 +22,27 @@ namespace BrudvikStackedChest.Patches.Containers
         public static event EventHandler<ContainerDropAllItemsPatchEvent>? ContainerDropAllItemsPatched;
 
         /// <summary>
+        /// Event triggered after a container has built its hover text.
+        /// </summary>
+        public static event EventHandler<ContainerHoverTextPatchEvent>? ContainerHoverTextPatched;
+
+        /// <summary>
+        /// Harmony patch for Container.GetHoverText that lets handlers extend the hover text.
+        /// </summary>
+        [HarmonyPatch(typeof(Container), "GetHoverText")]
+        public static class ContainerGetHoverTextPatch
+        {
+            static void Postfix(Container __instance, ref string __result)
+            {
+                if (__instance == null || ContainerHoverTextPatched == null) return;
+
+                var args = new ContainerHoverTextPatchEvent { Container = __instance, Text = __result };
+                ContainerHoverTextPatched.Invoke(null, args);
+                __result = args.Text;
+            }
+        }
+
+        /// <summary>
         /// Harmony patch for the CheckForChanges method of the Container class.
         /// This patch triggers the ContainerCheckForChangesPatched event after the original CheckForChanges method is executed.
         /// </summary>

@@ -57,7 +57,7 @@ namespace BrudvikStackedChest.Piece
                         Recover = true 
                     }
                 },
-                SpawnItems = model.SpawnItems 
+                ItemCategory = model.Category
             };
 
             // Create a new custom piece with the specified name and base piece

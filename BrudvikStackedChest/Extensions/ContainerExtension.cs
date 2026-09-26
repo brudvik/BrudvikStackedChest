@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using BrudvikStackedChest.Constants;
+using BrudvikStackedChest.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace BrudvikStackedChest.Extensions
@@ -8,123 +12,150 @@ namespace BrudvikStackedChest.Extensions
     /// </summary>
     public static class ContainerExtension
     {
+        // Remembers the mode a chest was last restocked in, so a mode change can be cleaned up.
+        private const string ModeKey = "BrudvikStackedChest_Mode";
+
         /// <summary>
-        /// Spawns initial items in the container if they do not already exist.
-        /// Also refills existing items to their maximum stack size.
+        /// Keeps the unlimited stacks in the container full and adds the unlimited items that are missing.
+        /// Only the owner of the container changes it, and it is only saved when something actually changed.
         /// </summary>
-        /// <param name="container">The container in which to spawn items.</param>
-        /// <param name="spawnItems">A list of item names to spawn in the container.</param>
-        public static void SpawnInitialItems(this Container container, List<string> spawnItems)
+        /// <param name="container">The container to restock.</param>
+        /// <param name="category">The chest's item category.</param>
+        /// <param name="supply">Decides which items are unlimited.</param>
+        public static void Restock(this Container container, ChestCategory category, ChestSupply supply)
         {
-            // Check if the container is placed in the game world. We need to check
-            // this before attempting to load the container's inventory. If the container
-            // is not placed, we cannot load the inventory.
-            if (!IsContainerPlaced(container))
-            {
-                return;
-            }
+            if (!IsOwnedByMe(container) || !supply.IsReady) return;
 
-            // Load the container's inventory
-            container.Load();
-
-            // Retrieve the inventory of the container.
             var inventory = container.GetInventory();
             if (inventory == null) return;
 
-            var existingItems = new HashSet<string>();
+            var mode = supply.Mode;
+            var changed = RemoveAfterModeChange(container, inventory, category, supply, mode);
+            if (mode == ChestMode.Linear) UnlockFullStacks(container, inventory, category, supply);
 
-            // Collect existing items in the inventory and refill them to their maximum stack size
+            var refilled = false;
+            var present = new HashSet<string>();
             foreach (var item in inventory.GetAllItems())
             {
-                existingItems.Add(item.m_dropPrefab.name);
-                item.m_stack = item.m_shared.m_maxStackSize;
-            }
+                if (item.m_dropPrefab != null) present.Add(item.m_dropPrefab.name);
 
-            // Add new items to the inventory if they do not already exist
-            foreach (var prefabName in spawnItems)
-            {
-                if (!existingItems.Contains(prefabName))
-                {
-                    var prefab = ObjectDB.instance.GetItemPrefab(prefabName);
-                    if (prefab != null)
-                    {
-                        var itemDrop = prefab.GetComponent<ItemDrop>();
-                        if (itemDrop != null)
-                        {
-                            // Use the prefab name directly instead of m_dropPrefab to avoid null reference
-                            // issues with items like fish that have special handling
-                            inventory.AddItem(prefab, itemDrop.m_itemData.m_shared.m_maxStackSize);
-                        }
-                    }
-                }
-            }
-
-            // Save the container's state
-            container.Save();
-        }
-
-        /// <summary>
-        /// Refills all items in the container to their maximum stack size.
-        /// </summary>
-        /// <param name="container">The container whose items should be refilled.</param>
-        public static void RefillItemsToMax(this Container container)
-        {
-            // Retrieve the inventory of the container.
-            var inventory = container.GetInventory();
-            if (inventory == null) return;
-
-            // Refill each item in the inventory to its maximum stack size
-            foreach (var item in inventory.GetAllItems())
-            {
-                if (item.m_stack < item.m_shared.m_maxStackSize)
+                if (item.m_stack < item.m_shared.m_maxStackSize && supply.IsSupplied(mode, category, item))
                 {
                     item.m_stack = item.m_shared.m_maxStackSize;
+                    refilled = true;
                 }
             }
 
-            // Save the container's state
-            container.Save();
+            changed |= refilled;
+            if (refilled) ChestEffects.PlayRefill(container);
+
+            var missing = new List<GameObject>();
+            foreach (var prefabName in supply.GetItemsToAdd(category))
+            {
+                if (present.Contains(prefabName)) continue;
+
+                var prefab = ObjectDB.instance.GetItemPrefab(prefabName);
+                if (prefab != null && prefab.GetComponent<ItemDrop>() != null) missing.Add(prefab);
+            }
+
+            if (missing.Count > 0)
+            {
+                EnsureRows(inventory, inventory.GetAllItems().Count + missing.Count);
+                foreach (var prefab in missing)
+                {
+                    var maxStack = prefab.GetComponent<ItemDrop>().m_itemData.m_shared.m_maxStackSize;
+                    changed |= inventory.AddItem(prefab, maxStack);
+                }
+            }
+
+            if (changed) container.Save();
         }
 
         /// <summary>
-        /// Gets the count of items in the container's inventory.
+        /// Removes the stacks the chest supplies without limit, so only items players stored themselves are dropped
+        /// when the chest is destroyed.
         /// </summary>
-        /// <param name="container">The container whose inventory count is to be retrieved.</param>
-        /// <returns>The number of items in the container's inventory.</returns>
-        public static int GetInventoryCount(this Container container)
+        /// <param name="container">The container that is about to drop its items.</param>
+        /// <param name="category">The chest's item category.</param>
+        /// <param name="supply">Decides which items are unlimited.</param>
+        public static void RemoveSuppliedItems(this Container container, ChestCategory category, ChestSupply supply)
         {
-            // Retrieve the inventory of the container.
-            var inventory = container.GetInventory();
-            if (inventory == null) return 0;
-            return inventory.GetAllItems().Count;
-        }
-
-        /// <summary>
-        /// Empties all items from the container's inventory.
-        /// </summary>
-        /// <param name="container">The container to be emptied.</param>
-        public static void EmptyChest(this Container container)
-        {
-            // Retrieve the inventory of the container.
             var inventory = container.GetInventory();
             if (inventory == null) return;
 
-            // Remove all items from the inventory.
-            inventory.RemoveAll();
+            var mode = supply.Mode;
+            if (RemoveWhere(inventory, item => supply.IsSupplied(mode, category, item))) container.Save();
+        }
 
-            // Save the state of the container to persist the changes.
-            container.Save();
+        private static bool RemoveAfterModeChange(Container container, Inventory inventory, ChestCategory category, ChestSupply supply, ChestMode mode)
+        {
+            var zdo = container.m_nview.GetZDO();
+
+            // Chests from before the modes existed were filled in Full mode.
+            var previous = (ChestMode)zdo.GetInt(ModeKey, (int)ChestMode.Full);
+            if (previous == mode) return false;
+
+            zdo.Set(ModeKey, (int)mode);
+            return RemoveWhere(inventory, item => supply.IsSupplied(previous, category, item) && !supply.IsSupplied(mode, category, item));
+        }
+
+        private static void UnlockFullStacks(Container container, Inventory inventory, ChestCategory category, ChestSupply supply)
+        {
+            var totals = new Dictionary<string, int>();
+            var shared = new Dictionary<string, ItemDrop.ItemData.SharedData>();
+            foreach (var item in inventory.GetAllItems())
+            {
+                if (item.m_dropPrefab == null) continue;
+
+                var name = item.m_dropPrefab.name;
+                totals.TryGetValue(name, out var total);
+                totals[name] = total + item.m_stack;
+                shared[name] = item.m_shared;
+            }
+
+            foreach (var pair in totals)
+            {
+                var itemShared = shared[pair.Key];
+                if (!supply.CanUnlock(category, pair.Key, itemShared) || pair.Value < supply.GetUnlockAmount(itemShared)) continue;
+
+                supply.Unlock(pair.Key);
+                ChestEffects.Play(container, ChestEffects.Unlock);
+                if (Player.m_localPlayer != null)
+                {
+                    Player.m_localPlayer.Message(MessageHud.MessageType.Center,
+                        $"{Localization.instance.Localize(itemShared.m_name)} is now unlimited");
+                }
+            }
+        }
+
+        private static bool RemoveWhere(Inventory inventory, Func<ItemDrop.ItemData, bool> predicate)
+        {
+            var removed = false;
+            foreach (var item in inventory.GetAllItems().ToList())
+            {
+                if (predicate(item)) removed |= inventory.RemoveItem(item);
+            }
+            return removed;
         }
 
         /// <summary>
-        /// Check if the container is actually placed in the game world.
+        /// Grows the inventory height so it can hold the given number of stacks. Other clients follow automatically,
+        /// because the game expands a container to fit the saved item positions when it loads.
         /// </summary>
-        /// <param name="container"></param>
-        /// <returns></returns>
-        private static bool IsContainerPlaced(Container container)
+        private static void EnsureRows(Inventory inventory, int stacks)
         {
-            // Check if the container has a valid position in the game world
-            return container.transform != null && container.transform.position != Vector3.zero;
+            var width = Mathf.Max(1, inventory.GetWidth());
+            var rows = (stacks + width - 1) / width;
+            if (rows > inventory.GetHeight()) inventory.SetHeight(rows);
+        }
+
+        /// <summary>
+        /// Checks that the container is a placed, networked instance owned by this peer. Only the owner may change
+        /// it; changes made elsewhere would be overwritten or fight over the shared data.
+        /// </summary>
+        private static bool IsOwnedByMe(Container container)
+        {
+            return container.m_nview != null && container.m_nview.IsValid() && container.m_nview.IsOwner();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using BrudvikStackedChest.Constants;
 using UnityEngine;
 
 namespace BrudvikStackedChest.Models
@@ -29,9 +29,9 @@ namespace BrudvikStackedChest.Models
         public string Icon { get; set; } = "strg_049_round.png";
 
         /// <summary>
-        /// List of item prefab names to spawn in the chest.
+        /// The category of items the chest is filled with. The items are sorted automatically at runtime.
         /// </summary>
-        public List<string> SpawnItems { get; set; } = new List<string>();
+        public ChestCategory Category { get; set; } = ChestCategory.None;
 
         /// <summary>
         /// The color tint applied to the chest.
@@ -39,7 +39,7 @@ namespace BrudvikStackedChest.Models
         public Color Color { get; set; } = new Color(0, 0, 0, 0.8f);
 
         /// <summary>
-        /// The number of rows in the chest inventory. Default is 8.
+        /// The minimum number of rows in the chest inventory. Default is 8. The chest grows when it needs more room.
         /// </summary>
         public int Rows { get; set; } = 8;
 

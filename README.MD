@@ -32,113 +32,79 @@ Once placed, the chest will:
 ### Removing Chests
 
 When you destroy or remove a chest:
-- **All contents are automatically deleted** (no item drops)
+- **All unlimited contents are automatically deleted** (no item drops)
+- In the Linear and Discovered modes, items you stored yourself are dropped as with any other chest
 - This prevents cluttering your world with unwanted items
 - The chest can be safely relocated without spawning duplicate items
 
-> **Warning**: If you store custom items in the "Everlasting Chest", they will be lost when the chest is removed!
+> **Warning**: In Full mode, custom items stored in the "Everlasting Chest" are lost when the chest is removed!
+
+### Chest Modes
+
+The `Mode` setting decides how generous the chests are:
+
+| Mode | Behavior |
+|------|----------|
+| Full | Every item is always available, as in earlier versions |
+| Linear | A chest works like a normal chest until it holds a full stack of an item. From then on the item is unlimited in every chest of that type in the world. You play normally, but the grinding stops once you have gathered enough of something |
+| Discovered | An item is unlimited as soon as any player in the world has discovered it |
+
+In Linear and Discovered:
+- Unlocked and discovered items are shared by everyone in the world and saved by the server in `BepInEx/config/BrudvikStackedChest/`
+- Items that do not stack, like weapons and armor, are never duplicated; those chests work as normal chests
+- The hover text of a chest shows how many of its items are unlimited
+- The Everlasting Chest makes any stackable item unlimited once it holds a full stack (Linear) or once the item is discovered (Discovered)
+
+### Seeing Your Progress
+
+- Unlimited stacks show a gold **∞** instead of their amount, in every mode
+- In Linear mode, items that can still be unlocked get a blue bar under the slot that fills up as you store more of them
+- The item tooltip tells whether the item is unlimited, how many more you need to store, or why it is stored normally
+- The chest title and hover text show how many of the chest's items are unlimited, and the hover text lists the three items closest to being unlocked
+- Everyone on the server is told when a player makes an item unlimited
+- A chest glows brighter the more of its items are unlimited, turns gold when all of them are, and plays an effect when it is completed
+- The `bsc_progress` command (console or chat) lists the progress of every chest
+
+Switching to a less generous mode removes the unlimited items the new mode no longer supplies, for example everything that is not unlocked when going from Full to Linear.
 
 ---
 
 ## Available Chests
 
-### Wood Chest
-*A chest filled with wood materials*
+The contents of every chest are generated automatically when a world loads. The mod looks at every item in the game, including items added by other mods, and sorts it by its type and by where it comes from. New items from game updates show up in the right chest without the mod needing an update.
 
-| Color | Items |
-|-------|-------|
-| Black | Wood, FineWood, RoundLog, Blackwood, Coal, Root, YggdrasilWood, ElderBark |
+| Chest | Color | Contents |
+|-------|-------|----------|
+| Wood Chest | Black | Everything that drops from trees and logs, plus what is made from it only (Coal) |
+| Stone Chest | Gray | Everything that drops from rocks and mineable deposits, plus what is crafted from stone only |
+| Metal Chest | Dark Red | Ores, scrap and bars from the smelter and blast furnace, plus what is crafted from metal only (Bronze, nails, chains) |
+| Food Chest | Brown | All food, fish, raw and uncooked ingredients for the cooking station and oven, and anything used in a food recipe |
+| Material Chest | Dark Blue | All remaining crafting materials |
+| Animal Chest | Yellow | Materials dropped by creatures (hides, bones, scales, feathers, and so on) |
+| Seed Chest | Green | Seeds, cones and nuts that are planted but not used as ingredients |
+| Trophy Chest | Teal | All trophies |
+| Treasure Chest | Gold/Yellow | Items with a trade value (Coins, Amber, Ruby, and so on), keys, eggs and boss rewards |
+| Tools Chest | Purple | Tools, torches, lanterns, pickaxes, fishing rods and bait, utility items, saddles and other crafted gear |
+| Armor Chest | Brown | All helmets, chest pieces, legs, capes and trinkets |
+| Weapon Chest | Red | All weapons, shields, arrows, bolts and bombs |
+| Potion Chest | Pink/Purple | All meads and mead bases |
+| Everlasting Chest | Dark Gray | Empty - add your own items and they will be restocked automatically! |
 
-### Stone Chest
-*A chest filled with stone materials*
+Items that cannot be obtained in normal play (creature attacks, test items and unused variants) are left out.
 
-| Color | Items |
-|-------|-------|
-| Gray | Flint, Obsidian, BlackMarble, Stone, Grausten, SharpeningStone, CeramicPlate |
+## Configuration
 
-### Metal Chest
-*A chest filled with metal materials*
+The configuration file is `BepInEx/config/com.jotunn.BrudvikStackedChest.cfg`. The chest settings are synchronized from the server, so every player on a server sees the same chests.
 
-| Color | Items |
-|-------|-------|
-| Dark Red | Iron, IronNails, Bronze, BronzeNails, Silver, BlackMetal, Tin, Copper, Chain, CharredCogwheel, Flametal, FlametalNew, MechanicalSpring, IronScrap, CopperScrap, CopperOre, TinOre, IronOre, SilverOre, BlackMetalScrap, FlametalOre |
+| Section | Setting | Description |
+|---------|---------|-------------|
+| General | DumpItemLists | Writes the generated item list of every chest to the BepInEx log, including items that could not be sorted |
+| General | Mode | Full, Linear or Discovered, see [Chest Modes](#chest-modes) |
+| General | UnlockStacks | Linear mode: the number of full stacks a chest must hold to unlock an item (1-10, default 1) |
+| Chest.&lt;Name&gt; | Include | Comma-separated prefab names that are always placed in this chest, overriding the automatic sorting |
+| Chest.&lt;Name&gt; | Exclude | Comma-separated prefab names that are never placed in this chest |
 
-### Food Chest
-*A chest filled with food ingredients*
-
-| Color | Items |
-|-------|-------|
-| Brown | Raw ingredients: Barley, BarleyFlour, Blueberries, Carrot, Honey, Mushrooms, Onion, Raspberry, Turnip, and many more. Cooked foods: Bread, Sausages, QueensJam, CarrotSoup, TurnipStew, BloodPudding, FishWraps, various cooked meats, and more! |
-
-### Material Chest
-*A chest filled with various crafting materials*
-
-| Color | Items |
-|-------|-------|
-| Dark Blue | BlackCore, Crystal, Eitr, Guck, LinenThread, MoltenCore, Needle, Ooze, Resin, Sap, SurtlingCore, Tar, Thunderstone, Wisp, Gemstones (Blue/Green/Red), and more! |
-
-### Animal Chest
-*A chest filled with animal materials*
-
-| Color | Items |
-|-------|-------|
-| Yellow | BoneFragments, Carapace, Chitin, DeerHide, DragonTear, Feathers, GreydwarfEye, LeatherScraps, LoxPelt, TrollHide, WolfPelt, WolfFang, SerpentScale, and more! |
-
-### Seed Chest
-*A chest filled with seeds and saplings*
-
-| Color | Items |
-|-------|-------|
-| Green | Acorn, AncientSeed, BeechSeeds, BirchSeeds, CarrotSeeds, OnionSeeds, PineCone, TurnipSeeds, VineberrySeeds, FirCone, Sap |
-
-### Trophy Chest
-*A chest filled with all trophies*
-
-| Color | Items |
-|-------|-------|
-| Teal | All boss trophies (Eikthyr, TheElder, Bonemass, DragonQueen, GoblinKing, SeekerQueen, Fader) + all creature trophies (50+ different trophies!) |
-
-### Treasure Chest
-*A chest filled with treasures and riches*
-
-| Color | Items |
-|-------|-------|
-| Gold/Yellow | Amber, AmberPearl, Coins, Ruby, SilverNecklace, Gemstones, DragonEgg, GoblinTotem, Hildir Keys |
-
-### Tools Chest
-*A chest filled with useful tools*
-
-| Color | Items |
-|-------|-------|
-| Purple | BarberKit, BeltStrength (Megingjord), CryptKey, FishingRod, All fishing baits, Lantern, Wishbone, Hammer, Hoe, Cultivator, All pickaxes, SaddleLox, Demister, DvergrKey, and more! |
-
-### Armor Chest
-*A chest filled with armor sets from all tiers*
-
-| Color | Items |
-|-------|-------|
-| Brown | Complete armor sets: Leather, Troll, Bronze, Iron, Wolf/Silver, Padded, Carapace, Flametal, Mage, Fenris, Root. Plus all capes! |
-
-### Weapon Chest
-*A chest filled with weapons from all biomes*
-
-| Color | Items |
-|-------|-------|
-| Red | Swords, Axes, Maces, Atgeirs, Spears, Knives, Bows, Crossbows, Staffs, Arrows, Bolts, and Shields from all tiers! |
-
-### Potion Chest
-*A chest filled with meads and potions*
-
-| Color | Items |
-|-------|-------|
-| Pink/Purple | Health meads (Minor/Medium/Major), Stamina meads, Eitr meads, Resistance meads (Frost/Poison/Bug), Tasty mead, and all mead bases for brewing! |
-
-### Everlasting Chest
-*An empty chest - add items to make them last forever*
-
-| Color | Items |
-|-------|-------|
-| Dark Gray | Empty - add your own items and they will be restocked automatically! |
+Changes take effect without restarting the game. A chest never removes items that are already in it; remove unwanted items by hand.
 
 ---
 
@@ -146,8 +112,8 @@ When you destroy or remove a chest:
 
 All custom chests now feature:
 
-- **Glow Effect**: Each chest emits a subtle glow in its respective color, making them easy to identify
-- **Particle Effects**: A sparkle effect appears when items are automatically refilled
+- **Glow Effect**: Each chest emits a subtle glow in its respective color, making them easy to identify. Like the game's own lights, the glow switches off at a distance
+- **Particle Effects**: A sparkle effect appears when items are automatically refilled (at most once every 10 seconds per chest), and an unlock effect plays when an item becomes unlimited in Linear mode
 
 ---
 
@@ -157,7 +123,7 @@ All custom chests now feature:
 
 | Property | Value |
 |----------|-------|
-| Inventory Size | 8 x 8 (64 slots) |
+| Inventory Size | 8 x 8 (64 slots), grows automatically when a chest needs more room |
 | Base Prefab | piece_chest |
 | Build Category | Chests |
 | Build Tool | Hammer |
@@ -175,7 +141,13 @@ The mod uses several key technologies:
 | Method | Patch Type | Purpose |
 |--------|------------|---------|
 | Container.CheckForChanges | Postfix | Triggers item refill after inventory changes |
-| Container.DropAllItems | Prefix | Empties chest before removal to prevent item drops |
+| Container.DropAllItems | Prefix | Removes unlimited items before removal to prevent item drops |
+| Container.GetHoverText | Postfix | Shows how many of the chest's items are unlimited |
+| Player.OnSpawned | Postfix | Fetches the world progress from the server and shares discovered items |
+| Player.AddKnownItem | Postfix | Shares newly discovered items in Discovered mode |
+| InventoryGrid.UpdateGui | Postfix | Shows ∞ on unlimited stacks and unlock progress bars |
+| InventoryGrid.CreateItemTooltip | Postfix | Adds the item's status in the chest to its tooltip |
+| InventoryGui.UpdateContainer | Postfix | Adds the chest's progress to the container title |
 
 ---
 
@@ -220,6 +192,28 @@ This mod demonstrates several modding techniques:
 ---
 
 ## Changelog
+
+### v0.2.0
+
+- Added: Chest contents are generated automatically from the game data, so new items no longer need a mod update
+- Added: Configuration file with Include and Exclude lists per chest, synchronized from the server
+- Added: DumpItemLists setting that writes the generated chest contents to the log
+- Added: Linear mode - store a full stack of an item to make it unlimited for the whole world
+- Added: Discovered mode - items are unlimited once any player in the world has discovered them
+- Added: UnlockStacks setting for how many full stacks Linear mode requires
+- Added: Chest hover text shows how many items are unlimited in the Linear and Discovered modes
+- Added: Unlimited stacks show ∞, and Linear mode shows unlock progress bars, tooltips and the items closest to being unlocked
+- Added: All players are told when someone makes an item unlimited
+- Added: Chest glow follows the progress, turns gold when a chest is complete, and plays an effect when it gets there
+- Added: bsc_progress command that lists the progress of every chest
+- Changed: In the Linear and Discovered modes, destroyed chests drop the items players stored themselves
+- Changed: Chests grow automatically when their contents need more than the default number of rows
+- Changed: Items that cannot be obtained in normal play are no longer placed in chests
+- Changed: Chest glow lights switch off at a distance, like the game's own lights
+- Fixed: The refill sparkle effect listed since v0.1.0 was never implemented; it now plays when a chest refills
+- Fixed: The Wood Chest and the Everlasting Chest gave little or no glow because of their dark color
+- Fixed: Chests saved every second even when nothing changed, which caused needless network traffic
+- Fixed: In multiplayer, only the player that owns a chest restocks it, so clients no longer overwrite each other
 
 ### v0.1.1
 

@@ -1,9 +1,14 @@
 using BepInEx;
+using BrudvikStackedChest.Commands;
+using BrudvikStackedChest.Configuration;
+using BrudvikStackedChest.Constants;
 using BrudvikStackedChest.Events;
 using BrudvikStackedChest.Extensions;
 using BrudvikStackedChest.Helpers;
 using BrudvikStackedChest.Models;
 using BrudvikStackedChest.Patches.Containers;
+using BrudvikStackedChest.Patches.Gui;
+using BrudvikStackedChest.Patches.Players;
 using BrudvikStackedChest.Piece;
 using BrudvikStackedChest.Utils;
 using HarmonyLib;
@@ -27,7 +32,7 @@ namespace BrudvikStackedChest
         /// </summary>
         public const string PluginGUID = "com.jotunn.BrudvikStackedChest";
         public const string PluginName = "BrudvikStackedChest";
-        public const string PluginVersion = "0.1.1";
+        public const string PluginVersion = "0.2.0";
 
         /// <summary>
         /// List to store custom pieces (chests) added by the plugin.
@@ -39,12 +44,30 @@ namespace BrudvikStackedChest
         /// </summary>
         private CustomChestManager customChestManager = new(PieceManager.Instance, new SpriteLoader(PluginName), PluginName);
 
+        // Created in Awake, because the BepInEx config file is not available to field initializers.
+        private PluginSettings settings = null!;
+        private ItemCatalog itemCatalog = null!;
+        private WorldProgress worldProgress = null!;
+        private ChestSupply chestSupply = null!;
+        private ChestProgressUi progressUi = null!;
+
         /// <summary>
         /// Awake method is called when the script instance is being loaded.
         /// This method sets up event handlers, applies Harmony patches, and logs the plugin load message.
         /// </summary>
         private void Awake()
         {
+            settings = new PluginSettings(Config);
+            itemCatalog = new ItemCatalog(settings);
+            worldProgress = new WorldProgress(PluginName);
+            chestSupply = new ChestSupply(settings, itemCatalog, worldProgress);
+            progressUi = new ChestProgressUi(chestSupply, FindPiece);
+
+            Config.SettingChanged += (_, _) => HandleSettingsChanged();
+            SynchronizationManager.OnConfigurationSynchronized += (_, _) => HandleSettingsChanged();
+            worldProgress.ItemUnlocked += HandleItemUnlockedByOthers;
+            CommandManager.Instance.AddConsoleCommand(new ProgressCommand(chestSupply, progressUi, () => customPieces));
+
             // Register a callback to add cloned items when prefabs are registered
             PrefabManager.OnPrefabsRegistered += AddClonedItems;
 
@@ -52,55 +75,91 @@ namespace BrudvikStackedChest
             var harmony = new Harmony(PluginGUID);
             harmony.PatchAll();
 
-            // Event handler for when a container checks for changes
             ContainerPatch.ContainerCheckForChangesPatched += HandleContainerCheckForChanges;
-
-            // Event handler for when a container is about to drop all items
             ContainerPatch.ContainerDropAllItemsPatched += HandleContainerDropAllItemsPatched;
+            ContainerPatch.ContainerHoverTextPatched += progressUi.HandleContainerHoverText;
+            InventoryGuiPatch.InventoryGridUpdatedPatched += progressUi.HandleGridUpdated;
+            InventoryGuiPatch.ItemTooltipPatched += progressUi.HandleItemTooltip;
+            InventoryGuiPatch.ContainerPanelUpdatedPatched += progressUi.HandleContainerPanelUpdated;
+            PlayerPatch.PlayerSpawnedPatched += HandlePlayerSpawned;
+            PlayerPatch.PlayerKnownItemPatched += HandlePlayerKnownItem;
 
             Jotunn.Logger.LogInfo($"{PluginName} v{PluginVersion} has loaded!");
         }
 
+        private void HandleSettingsChanged()
+        {
+            itemCatalog.Invalidate();
+            RegisterDiscoveries(Player.m_localPlayer);
+        }
+
         /// <summary>
-        /// This method handles the ContainerDropAllItemsPatched event.
-        /// It is triggered when the DropAllItems method of a Container is called.
+        /// Tells every player when someone else in the world makes an item unlimited. The player who did it already
+        /// got a message in the middle of the screen.
+        /// </summary>
+        private void HandleItemUnlockedByOthers(string prefabName)
+        {
+            if (Player.m_localPlayer == null) return;
+
+            Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, $"{chestSupply.GetDisplayName(prefabName)} is now unlimited");
+        }
+
+        /// <summary>
+        /// Before a chest drops its contents, removes the stacks it supplies without limit, so only items players
+        /// stored themselves are dropped.
         /// </summary>
         private void HandleContainerDropAllItemsPatched(object sender, ContainerDropAllItemsPatchEvent e)
         {
-            // Check if the event argument or the container's name is null.
-            if (e?.Container?.name == null) return;
+            var piece = FindPiece(e?.Container);
+            if (piece == null) return;
 
-            // Iterate through the list of custom pieces.
-            foreach (var piece in customPieces)
-            {
-                // Check if the container's name contains the name of the custom piece.
-                if (e.Container.name.Contains(piece.CustomPieceConfig.Name))
-                {
-                    // If a match is found, empty the container's inventory.
-                    e.Container.EmptyChest();
-                }
-            }
+            e!.Container.RemoveSuppliedItems(piece.CustomPieceConfig.ItemCategory, chestSupply);
         }
 
         /// <summary>
         /// Handles the ContainerCheckForChangesPatched event.
-        /// Ensures the container has the correct number of items and refills items to the maximum amount if necessary.
+        /// Keeps the unlimited stacks in one of our chests full and adds the unlimited items that are missing.
         /// </summary>
         private void HandleContainerCheckForChanges(object sender, ContainerCheckForChangesPatchEvent e)
         {
-            if (e?.Container?.name == null) return;
+            var piece = FindPiece(e?.Container);
+            if (piece == null) return;
+
+            ChestEffects.UpdateGlow(e!.Container, piece.Color, piece.CustomPieceConfig.ItemCategory, chestSupply);
+            e.Container.Restock(piece.CustomPieceConfig.ItemCategory, chestSupply);
+        }
+
+        private void HandlePlayerSpawned(object sender, PlayerSpawnedPatchEvent e)
+        {
+            worldProgress.RequestSync();
+            RegisterDiscoveries(e.Player);
+        }
+
+        private void HandlePlayerKnownItem(object sender, PlayerKnownItemPatchEvent e)
+        {
+            if (settings.Mode.Value == ChestMode.Discovered) worldProgress.Discover(new[] { e.ItemToken });
+        }
+
+        /// <summary>
+        /// Shares everything the player already knows, so items discovered before joining or before the mode was
+        /// switched count as well.
+        /// </summary>
+        private void RegisterDiscoveries(Player? player)
+        {
+            if (player == null || settings.Mode.Value != ChestMode.Discovered) return;
+
+            worldProgress.Discover(player.m_knownMaterial);
+        }
+
+        private CustomPieceExtended? FindPiece(Container? container)
+        {
+            if (container == null || container.name == null) return null;
 
             foreach (var piece in customPieces)
             {
-                if (e.Container.name.Contains(piece.CustomPieceConfig.Name))
-                {
-                    if (e.Container.GetInventoryCount() < piece.CustomPieceConfig.SpawnItems.Count)
-                    {
-                        e.Container.SpawnInitialItems(piece.CustomPieceConfig.SpawnItems);
-                    }
-                    e.Container.RefillItemsToMax();
-                }
+                if (container.name.Contains(piece.CustomPieceConfig.Name)) return piece;
             }
+            return null;
         }
 
         /// <summary>
@@ -117,17 +176,7 @@ namespace BrudvikStackedChest
                     Description = "A chest filled with wood materials",
                     Icon = "strg_049_round.png",
                     Color = SharedUtils.ColorFromRGB(0, 0, 0, 0.8f),
-                    SpawnItems = new List<string>
-                    {
-                        "Wood",
-                        "FineWood",
-                        "RoundLog",
-                        "Blackwood",
-                        "Coal",
-                        "Root",
-                        "YggdrasilWood",
-                        "ElderBark"
-                    }
+                    Category = ChestCategory.Wood
                 }
             ));
 
@@ -139,16 +188,7 @@ namespace BrudvikStackedChest
                     Description = "A chest filled with stone materials",
                     Icon = "strg_009_round.png",
                     Color = SharedUtils.ColorFromRGB(135, 135, 135, 0.8f),
-                    SpawnItems = new List<string>
-                    {
-                        "Flint",
-                        "Obsidian",
-                        "BlackMarble",
-                        "Stone",
-                        "Grausten",
-                        "SharpeningStone",
-                        "CeramicPlate"
-                    }
+                    Category = ChestCategory.Stone
                 }
             ));
 
@@ -160,30 +200,7 @@ namespace BrudvikStackedChest
                     Description = "A chest filled with metal materials",
                     Icon = "strg_082_round.png",
                     Color = SharedUtils.ColorFromRGB(163, 34, 24, 0.8f),
-                    SpawnItems = new List<string>
-                    {
-                        "Iron",
-                        "IronNails",
-                        "Bronze",
-                        "BronzeNails",
-                        "Silver",
-                        "BlackMetal",
-                        "Tin",
-                        "Copper",
-                        "Chain",
-                        "CharredCogwheel",
-                        "Flametal",
-                        "FlametalNew",
-                        "MechanicalSpring",
-                        "IronScrap",
-                        "CopperScrap",
-                        "CopperOre",
-                        "TinOre",
-                        "IronOre",
-                        "SilverOre",
-                        "BlackMetalScrap",
-                        "FlametalOre"
-                    }
+                    Category = ChestCategory.Metal
                 }
             ));
 
@@ -196,72 +213,7 @@ namespace BrudvikStackedChest
                     Icon = "strg_046_round.png",
                     Color = SharedUtils.ColorFromRGB(112, 81, 44, 0.8f),
                     Rows = 10,
-                    SpawnItems = new List<string>
-                    {
-                        "AskBladder",
-                        "Barley",
-                        "BarleyFlour",
-                        "Bilebag",
-                        "Bloodbag",
-                        "Bread",
-                        "BreadDough",
-                        "Blueberries",
-                        "Carrot",
-                        "ChickenMeat",
-                        "Cloudberry",
-                        "Dandelion",
-                        "DeerMeat",
-                        "Entrails",
-                        "Flax",
-                        "FishRaw",
-                        "HareMeat",
-                        "Honey",
-                        "LoxMeat",
-                        "MashedMeat",
-                        "MorgenHeart",
-                        "Mushroom",
-                        "MushroomBlue",
-                        "MushroomJotunPuffs",
-                        "MushroomMagecap",
-                        "MushroomSmokePuff",
-                        "Onion",
-                        "Pukeberries",
-                        "QueensJam",
-                        "Raspberry",
-                        "RawMeat",
-                        "RoyalJelly",
-                        "Salad",
-                        "Sausages",
-                        "SerpentMeat",
-                        "Thistle",
-                        "Turnip",
-                        "Vineberry",
-                        "VoltureEgg",
-                        "VoltureMeat",
-                        "WolfMeat",
-                        "YmirRemains",
-                        "BugMeat",
-                        "NeckTail",
-                        "MushroomYellow",
-                        "FishAnglerRaw",
-                        "Fiddleheadfern",
-                        "CookedMeat",
-                        "CookedDeerMeat",
-                        "CookedLoxMeat",
-                        "CookedWolfMeat",
-                        "FishCooked",
-                        "SerpentMeatCooked",
-                        "CarrotSoup",
-                        "TurnipStew",
-                        "OnionSoup",
-                        "BloodPudding",
-                        "Eyescream",
-                        "FishWraps",
-                        "BoarJerky",
-                        "WolfJerky",
-                        "WolfMeatSkewer",
-                        "NeckTailGrilled"
-                    }
+                    Category = ChestCategory.Food
                 }
             ));
 
@@ -273,46 +225,7 @@ namespace BrudvikStackedChest
                     Description = "A chest filled with various materials",
                     Icon = "strg_088_round.png",
                     Color = SharedUtils.ColorFromRGB(44, 47, 112, 0.8f),
-                    SpawnItems = new List<string>
-                    {
-                        "BlackCore",
-                        "CharcoalResin",
-                        "Crystal",
-                        "Eitr",
-                        "Guck",
-                        "JuteBlue",
-                        "JuteRed",
-                        "LinenThread",
-                        "Mandible",
-                        "MoltenCore",
-                        "Needle",
-                        "Ooze",
-                        "QueenBee",
-                        "QueenDrop",
-                        "Resin",
-                        "Sap",
-                        "ShieldCore",
-                        "Softtissue",
-                        "SurtlingCore",
-                        "Tar",
-                        "Thunderstone",
-                        "YagluthDrop",
-                        "Wisp",
-                        "BellFragment",
-                        "DvergrNeedle",
-                        "GemstoneBlue",
-                        "GemstoneGreen",
-                        "GemstoneRed",
-                        "DvergrKeyFragment",
-                        "FreezeGland",
-                        "GiantBloodSack",
-                        "HardAntler",
-                        "ProustitePowder",
-                        "PungentPebbles",
-                        "DyrnwynBladeFragment",
-                        "DyrnwynHiltFragment",
-                        "DyrnwynTipFragment"
-                    }
+                    Category = ChestCategory.Material
                 }
             ));
 
@@ -324,31 +237,7 @@ namespace BrudvikStackedChest
                     Description = "A chest filled with various animal materials",
                     Icon = "strg_012_round.png",
                     Color = SharedUtils.ColorFromRGB(181, 178, 27, 0.8f),
-                    SpawnItems = new List<string>
-                    {
-                        "AskHide",
-                        "BoneFragments",
-                        "Carapace",
-                        "CelestialFeather",
-                        "CharredBone",
-                        "Charredskull",
-                        "Chitin",
-                        "DeerHide",
-                        "DragonTear",
-                        "Feathers",
-                        "FistFenrirClaw",
-                        "GreydwarfEye",
-                        "LeatherScraps",
-                        "LoxPelt",
-                        "ScaleHide",
-                        "SerpentScale",
-                        "TrollHide",
-                        "WolfFang",
-                        "WolfPelt",
-                        "WitheredBone",
-                        "WolfClaw",
-                        "WolfHairBundle"
-                    }
+                    Category = ChestCategory.Animal
                 }
             ));
 
@@ -360,20 +249,7 @@ namespace BrudvikStackedChest
                     Description = "A chest filled with various seeds",
                     Icon = "strg_029_round.png",
                     Color = SharedUtils.ColorFromRGB(27, 181, 89, 0.8f),
-                    SpawnItems = new List<string>
-                    {
-                        "Acorn",
-                        "AncientSeed",
-                        "BeechSeeds",
-                        "BirchSeeds",
-                        "CarrotSeeds",
-                        "OnionSeeds",
-                        "PineCone",
-                        "TurnipSeeds",
-                        "VineberrySeeds",
-                        "FirCone",
-                        "Sap"
-                    }
+                    Category = ChestCategory.Seed
                 }
             ));
 
@@ -385,65 +261,7 @@ namespace BrudvikStackedChest
                     Description = "A chest filled with trophies",
                     Icon = "strg_091_round.png",
                     Color = SharedUtils.ColorFromRGB(21, 122, 117, 0.8f),
-                    SpawnItems = new List<string>
-                    {
-                        "TrophyAbomination",
-                        "TrophyAsksvin",
-                        "TrophyBlob",
-                        "TrophyBoar",
-                        "TrophyBonemawSerpent",
-                        "TrophyBonemass",
-                        "TrophyCharredArcher",
-                        "TrophyCharredMage",
-                        "TrophyCharredMelee",
-                        "TrophyCultist",
-                        "TrophyCultist_Hildir",
-                        "TrophyDeathsquito",
-                        "TrophyDeer",
-                        "TrophyDragonQueen",
-                        "TrophyDraugr",
-                        "TrophyDraugrElite",
-                        "TrophyDraugrFem",
-                        "TrophyDvergr",
-                        "TrophyEikthyr",
-                        "TrophyFallenValkyrie",
-                        "TrophyFenring",
-                        "TrophyFader",
-                        "TrophyForestTroll",
-                        "TrophyFrostTroll",
-                        "TrophyGoblinShaman",
-                        "TrophyGjall",
-                        "TrophyGoblin",
-                        "TrophyGoblinBrute",
-                        "TrophyGoblinBruteBrosBrute",
-                        "TrophyGoblinBruteBrosShaman",
-                        "TrophyGoblinKing",
-                        "TrophyGreydwarf",
-                        "TrophyGreydwarfBrute",
-                        "TrophyGreydwarfShaman",
-                        "TrophyGrowth",
-                        "TrophyHare",
-                        "TrophyHatchling",
-                        "TrophyLeech",
-                        "TrophyLox",
-                        "TrophyMorgen",
-                        "TrophyNeck",
-                        "TrophySeeker",
-                        "TrophySeekerBrute",
-                        "TrophySeekerQueen",
-                        "TrophySerpent",
-                        "TrophySGolem",
-                        "TrophySkeleton",
-                        "TrophySkeletonHildir",
-                        "TrophySkeletonPoison",
-                        "TrophySurtling",
-                        "TrophyTick",
-                        "TrophyUlv",
-                        "TrophyVolture",
-                        "TrophyWraith",
-                        "TrophyWolf",
-                        "TrophyTheElder"
-                    }
+                    Category = ChestCategory.Trophy
                 }
             ));
 
@@ -455,22 +273,7 @@ namespace BrudvikStackedChest
                     Description = "A chest filled with treasures and riches",
                     Icon = "strg_098_round.png",
                     Color = SharedUtils.ColorFromRGB(228, 237, 95, 0.8f),
-                    SpawnItems = new List<string>
-                    {
-                        "Amber",
-                        "AmberPearl",
-                        "Coins",
-                        "Ruby",
-                        "SilverNecklace",
-                        "GemstoneBlue",
-                        "GemstoneGreen",
-                        "GemstoneRed",
-                        "DragonEgg",
-                        "GoblinTotem",
-                        "HildirKey_forestcrypt",
-                        "HildirKey_mountaincave",
-                        "HildirKey_plainsfortress"
-                    }
+                    Category = ChestCategory.Treasure
                 }
             ));
 
@@ -482,40 +285,7 @@ namespace BrudvikStackedChest
                     Description = "A chest filled with tools",
                     Icon = "strg_039_round.png",
                     Color = SharedUtils.ColorFromRGB(51, 21, 122, 0.8f),
-                    SpawnItems = new List<string>
-                    {
-                        "BarberKit",
-                        "BeltStrength",
-                        "CryptKey",
-                        "FishingBait",
-                        "FishingBaitAshlands",
-                        "FishingBaitCave",
-                        "FishingBaitDeepNorth",
-                        "FishingBaitForest",
-                        "FishingBaitMistlands",
-                        "FishingBaitOcean",
-                        "FishingBaitPlains",
-                        "FishingBaitSwamp",
-                        "FishingRod",
-                        "Lantern",
-                        "SpearChitin",
-                        "Wishbone",
-                        "Wisp",
-                        "Hammer",
-                        "Hoe",
-                        "Cultivator",
-                        "Torch",
-                        "PickaxeAntler",
-                        "PickaxeBronze",
-                        "PickaxeIron",
-                        "PickaxeBlackMetal",
-                        "SaddleLox",
-                        "Demister",
-                        "DvergrKey",
-                        "Tankard",
-                        "TankardOdin",
-                        "Sparkler"
-                    }
+                    Category = ChestCategory.Tools
                 }
             ));
 
@@ -527,63 +297,7 @@ namespace BrudvikStackedChest
                     Description = "A chest filled with armor sets from all tiers",
                     Icon = "strg_014_round.png",
                     Color = SharedUtils.ColorFromRGB(120, 80, 40, 0.8f),
-                    SpawnItems = new List<string>
-                    {
-                        // Leather Tier
-                        "HelmetLeather",
-                        "ArmorLeatherChest",
-                        "ArmorLeatherLegs",
-                        "CapeDeerHide",
-                        // Troll Tier
-                        "HelmetTrollLeather",
-                        "ArmorTrollLeatherChest",
-                        "ArmorTrollLeatherLegs",
-                        "CapeTrollHide",
-                        // Bronze Tier
-                        "HelmetBronze",
-                        "ArmorBronzeChest",
-                        "ArmorBronzeLegs",
-                        // Iron Tier
-                        "HelmetIron",
-                        "ArmorIronChest",
-                        "ArmorIronLegs",
-                        // Wolf/Silver Tier
-                        "HelmetDrake",
-                        "ArmorWolfChest",
-                        "ArmorWolfLegs",
-                        "CapeWolf",
-                        // Padded Tier
-                        "HelmetPadded",
-                        "ArmorPaddedCuirass",
-                        "ArmorPaddedGreaves",
-                        "CapeLinen",
-                        "CapeLox",
-                        // Carapace Tier
-                        "HelmetCarapace",
-                        "ArmorCarapaceChest",
-                        "ArmorCarapaceLegs",
-                        "CapeFeather",
-                        // Flametal Tier
-                        "HelmetFlametal",
-                        "ArmorFlametalChest",
-                        "ArmorFlametalLegs",
-                        "CapeAsh",
-                        // Mage Tier
-                        "HelmetMage",
-                        "ArmorMageChest",
-                        "ArmorMageLegs",
-                        // Fenris Tier
-                        "HelmetFenring",
-                        "ArmorFenringChest",
-                        "ArmorFenringLegs",
-                        // Root Tier
-                        "HelmetRoot",
-                        "ArmorRootChest",
-                        "ArmorRootLegs",
-                        // Misc Capes
-                        "CapeOdin",
-                        "CapeAsksvin"
-                    }
+                    Category = ChestCategory.Armor
                 }
             ));
 
@@ -597,92 +311,7 @@ namespace BrudvikStackedChest
                     Color = SharedUtils.ColorFromRGB(180, 50, 50, 0.8f),
                     Rows = 10,
                     Columns = 8,
-                    SpawnItems = new List<string>
-                    {
-                        // Swords
-                        "SwordBronze",
-                        "SwordIron",
-                        "SwordIronFire",
-                        "SwordSilver",
-                        "SwordBlackmetal",
-                        "SwordMistwalker",
-                        "SwordNiedhogg",
-                        "SwordDyrnwyn",
-                        // Axes
-                        "AxeFlint",
-                        "AxeBronze",
-                        "AxeIron",
-                        "AxeBlackMetal",
-                        "AxeJotunBane",
-                        // Maces
-                        "MaceBronze",
-                        "MaceIron",
-                        "MaceSilver",
-                        "MaceNeedle",
-                        // Atgeirs
-                        "AtgeirBronze",
-                        "AtgeirIron",
-                        "AtgeirBlackmetal",
-                        "AtgeirHimminAfl",
-                        // Spears
-                        "SpearFlint",
-                        "SpearBronze",
-                        "SpearElderbark",
-                        "SpearWolfFang",
-                        "SpearCarapace",
-                        // Knives
-                        "KnifeFlint",
-                        "KnifeCopper",
-                        "KnifeButcher",
-                        "KnifeBlackMetal",
-                        "KnifeSkollAndHati",
-                        // Bows
-                        "Bow",
-                        "BowFineWood",
-                        "BowHuntsman",
-                        "BowDraugrFang",
-                        "BowSpineSnap",
-                        "BowAshlands",
-                        // Crossbows
-                        "CrossbowArbalest",
-                        // Staffs
-                        "StaffFireball",
-                        "StaffIceShards",
-                        "StaffShield",
-                        "StaffSkeleton",
-                        "StaffRedTroll",
-                        "StaffGreenRoots",
-                        // Arrows
-                        "ArrowWood",
-                        "ArrowFlint",
-                        "ArrowBronze",
-                        "ArrowIron",
-                        "ArrowSilver",
-                        "ArrowObsidian",
-                        "ArrowPoison",
-                        "ArrowFrost",
-                        "ArrowFire",
-                        "ArrowNeedle",
-                        "ArrowCarapace",
-                        // Bolts
-                        "BoltBone",
-                        "BoltIron",
-                        "BoltBlackmetal",
-                        "BoltCarapace",
-                        // Shields
-                        "ShieldWood",
-                        "ShieldWoodTower",
-                        "ShieldBronzeBuckler",
-                        "ShieldBanded",
-                        "ShieldIronTower",
-                        "ShieldSilver",
-                        "ShieldBlackmetal",
-                        "ShieldBlackmetalTower",
-                        "ShieldCarapace",
-                        "ShieldCarapaceBuckler",
-                        "ShieldFlametal",
-                        "ShieldFlametalTower"
-                    }
+                    Category = ChestCategory.Weapon
                 }
             ));
 
@@ -694,39 +323,7 @@ namespace BrudvikStackedChest
                     Description = "A chest filled with meads and potions",
                     Icon = "strg_004_round.png",
                     Color = SharedUtils.ColorFromRGB(200, 100, 200, 0.8f),
-                    SpawnItems = new List<string>
-                    {
-                        // Health Meads
-                        "MeadHealthMinor",
-                        "MeadHealthMedium",
-                        "MeadHealthMajor",
-                        // Stamina Meads
-                        "MeadStaminaMinor",
-                        "MeadStaminaMedium",
-                        "MeadStaminaLingering",
-                        // Eitr Meads
-                        "MeadEitrMinor",
-                        "MeadEitrLingering",
-                        // Resistance Meads
-                        "MeadFrostResist",
-                        "MeadPoisonResist",
-                        "MeadBugRepellent",
-                        // Tasty Mead
-                        "MeadTasty",
-                        // Bases for brewing
-                        "MeadBaseHealthMinor",
-                        "MeadBaseHealthMedium",
-                        "MeadBaseHealthMajor",
-                        "MeadBaseStaminaMinor",
-                        "MeadBaseStaminaMedium",
-                        "MeadBaseStaminaLingering",
-                        "MeadBaseEitrMinor",
-                        "MeadBaseEitrLingering",
-                        "MeadBaseFrostResist",
-                        "MeadBasePoisonResist",
-                        "MeadBaseBugRepellent",
-                        "MeadBaseTasty"
-                    }
+                    Category = ChestCategory.Potion
                 }
             ));
 

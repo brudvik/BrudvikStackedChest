@@ -1,11 +1,11 @@
-﻿using Jotunn.Configs;
-using System.Collections.Generic;
+﻿using BrudvikStackedChest.Constants;
+using Jotunn.Configs;
 
 namespace BrudvikStackedChest.Piece
 {
     public class CustomPieceConfigExtended : PieceConfig
     {
         public string? PluginName { get; set; }
-        public List<string> SpawnItems { get; set; } = new List<string>();
+        public ChestCategory ItemCategory { get; set; } = ChestCategory.None;
     }
 }
