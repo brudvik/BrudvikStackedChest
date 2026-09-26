@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Jotunn.Utils;
+using System;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
@@ -37,8 +38,8 @@ namespace BrudvikStackedChest.Helpers
                     // Create a new Texture2D object
                     Texture2D texture = new Texture2D(2, 2);
 
-                    // Load the image data into the Texture2D object
-                    if (texture.LoadImage(data))
+                    // Unity 6 adds a ReadOnlySpan overload that net48 cannot bind, so go through Jotunn's wrapper
+                    if (AssetUtils.LoadImage(texture, data))
                     {
                         return texture; // Return the loaded texture
                     }

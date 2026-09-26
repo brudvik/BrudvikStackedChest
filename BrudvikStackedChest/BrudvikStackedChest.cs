@@ -27,7 +27,7 @@ namespace BrudvikStackedChest
         /// </summary>
         public const string PluginGUID = "com.jotunn.BrudvikStackedChest";
         public const string PluginName = "BrudvikStackedChest";
-        public const string PluginVersion = "0.1.0";
+        public const string PluginVersion = "0.1.1";
 
         /// <summary>
         /// List to store custom pieces (chests) added by the plugin.
@@ -124,7 +124,6 @@ namespace BrudvikStackedChest
                         "RoundLog",
                         "Blackwood",
                         "Coal",
-                        "AncientBark",
                         "Root",
                         "YggdrasilWood",
                         "ElderBark"
@@ -148,8 +147,7 @@ namespace BrudvikStackedChest
                         "Stone",
                         "Grausten",
                         "SharpeningStone",
-                        "CeramicPlate",
-                        "Ite"
+                        "CeramicPlate"
                     }
                 }
             ));
@@ -223,7 +221,7 @@ namespace BrudvikStackedChest
                         "MorgenHeart",
                         "Mushroom",
                         "MushroomBlue",
-                        "MushroomJotunnPuffs",
+                        "MushroomJotunPuffs",
                         "MushroomMagecap",
                         "MushroomSmokePuff",
                         "Onion",
@@ -242,12 +240,11 @@ namespace BrudvikStackedChest
                         "VoltureMeat",
                         "WolfMeat",
                         "YmirRemains",
-                        "SeekerMeat",
                         "BugMeat",
                         "NeckTail",
                         "MushroomYellow",
                         "FishAnglerRaw",
-                        "Fiddlehead",
+                        "Fiddleheadfern",
                         "CookedMeat",
                         "CookedDeerMeat",
                         "CookedLoxMeat",
@@ -292,7 +289,6 @@ namespace BrudvikStackedChest
                         "Ooze",
                         "QueenBee",
                         "QueenDrop",
-                        "RefinedEitr",
                         "Resin",
                         "Sap",
                         "ShieldCore",
@@ -308,7 +304,6 @@ namespace BrudvikStackedChest
                         "GemstoneGreen",
                         "GemstoneRed",
                         "DvergrKeyFragment",
-                        "SealbreakersKey",
                         "FreezeGland",
                         "GiantBloodSack",
                         "HardAntler",
@@ -351,11 +346,7 @@ namespace BrudvikStackedChest
                         "WolfFang",
                         "WolfPelt",
                         "WitheredBone",
-                        "HareHide",
-                        "SeekerHide",
-                        "AsksvinHide",
                         "WolfClaw",
-                        "ChickenBone",
                         "WolfHairBundle"
                     }
                 }
@@ -381,9 +372,7 @@ namespace BrudvikStackedChest
                         "TurnipSeeds",
                         "VineberrySeeds",
                         "FirCone",
-                        "Sap",
-                        "BarleyWild",
-                        "FlaxWild"
+                        "Sap"
                     }
                 }
             ));
@@ -419,13 +408,10 @@ namespace BrudvikStackedChest
                         "TrophyEikthyr",
                         "TrophyFallenValkyrie",
                         "TrophyFenring",
-                        "TrophyFish",
                         "TrophyFader",
                         "TrophyForestTroll",
                         "TrophyFrostTroll",
-                        "TrophyFuling",
-                        "TrophyFulingBerserker",
-                        "TrophyFulingShaman",
+                        "TrophyGoblinShaman",
                         "TrophyGjall",
                         "TrophyGoblin",
                         "TrophyGoblinBrute",
@@ -438,7 +424,6 @@ namespace BrudvikStackedChest
                         "TrophyGrowth",
                         "TrophyHare",
                         "TrophyHatchling",
-                        "TrophyHildir",
                         "TrophyLeech",
                         "TrophyLox",
                         "TrophyMorgen",
@@ -453,13 +438,11 @@ namespace BrudvikStackedChest
                         "TrophySkeletonPoison",
                         "TrophySurtling",
                         "TrophyTick",
-                        "TrophyTroll",
                         "TrophyUlv",
                         "TrophyVolture",
                         "TrophyWraith",
                         "TrophyWolf",
-                        "TrophyTheElder",
-                        "TrophyCharredTwitcher"
+                        "TrophyTheElder"
                     }
                 }
             ));
@@ -723,7 +706,6 @@ namespace BrudvikStackedChest
                         "MeadStaminaLingering",
                         // Eitr Meads
                         "MeadEitrMinor",
-                        "MeadEitrMedium",
                         "MeadEitrLingering",
                         // Resistance Meads
                         "MeadFrostResist",
@@ -739,7 +721,6 @@ namespace BrudvikStackedChest
                         "MeadBaseStaminaMedium",
                         "MeadBaseStaminaLingering",
                         "MeadBaseEitrMinor",
-                        "MeadBaseEitrMedium",
                         "MeadBaseEitrLingering",
                         "MeadBaseFrostResist",
                         "MeadBasePoisonResist",

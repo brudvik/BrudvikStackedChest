@@ -47,7 +47,7 @@ When you destroy or remove a chest:
 
 | Color | Items |
 |-------|-------|
-| Black | Wood, FineWood, RoundLog, Blackwood, Coal, AncientBark, Root, YggdrasilWood, ElderBark |
+| Black | Wood, FineWood, RoundLog, Blackwood, Coal, Root, YggdrasilWood, ElderBark |
 
 ### Stone Chest
 *A chest filled with stone materials*
@@ -75,7 +75,7 @@ When you destroy or remove a chest:
 
 | Color | Items |
 |-------|-------|
-| Dark Blue | BlackCore, Crystal, Eitr, RefinedEitr, Guck, LinenThread, MoltenCore, Needle, Ooze, Resin, Sap, SurtlingCore, Tar, Thunderstone, Wisp, Gemstones (Blue/Green/Red), and more! |
+| Dark Blue | BlackCore, Crystal, Eitr, Guck, LinenThread, MoltenCore, Needle, Ooze, Resin, Sap, SurtlingCore, Tar, Thunderstone, Wisp, Gemstones (Blue/Green/Red), and more! |
 
 ### Animal Chest
 *A chest filled with animal materials*
@@ -89,14 +89,14 @@ When you destroy or remove a chest:
 
 | Color | Items |
 |-------|-------|
-| Green | Acorn, AncientSeed, BeechSeeds, BirchSeeds, CarrotSeeds, OnionSeeds, PineCone, TurnipSeeds, VineberrySeeds, FirCone, Sap, BarleyWild, FlaxWild |
+| Green | Acorn, AncientSeed, BeechSeeds, BirchSeeds, CarrotSeeds, OnionSeeds, PineCone, TurnipSeeds, VineberrySeeds, FirCone, Sap |
 
 ### Trophy Chest
 *A chest filled with all trophies*
 
 | Color | Items |
 |-------|-------|
-| Teal | All boss trophies (Eikthyr, TheElder, Bonemass, DragonQueen, GoblinKing, SeekerQueen, Fader) + all creature trophies (60+ different trophies!) |
+| Teal | All boss trophies (Eikthyr, TheElder, Bonemass, DragonQueen, GoblinKing, SeekerQueen, Fader) + all creature trophies (50+ different trophies!) |
 
 ### Treasure Chest
 *A chest filled with treasures and riches*
@@ -188,8 +188,8 @@ The mod uses several key technologies:
 
 ### Requirements
 
-- [BepInEx](https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim/) (5.4.x or later)
-- [Jotunn (JVL)](https://valheim.thunderstore.io/package/ValheimModding/Jotunn/) (2.20.x or later)
+- [BepInEx](https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim/) (5.4.2351 or later)
+- [Jotunn (JVL)](https://valheim.thunderstore.io/package/ValheimModding/Jotunn/) (2.30.x or later)
 
 ---
 
@@ -220,6 +220,12 @@ This mod demonstrates several modding techniques:
 ---
 
 ## Changelog
+
+### v0.1.1
+
+- Updated: Compiled against Valheim 1.0.16 (Unity 6), Jotunn 2.30.2 and BepInExPack 5.4.2351
+- Fixed: Misspelled prefab names (MushroomJotunPuffs, Fiddleheadfern, TrophyGoblinShaman)
+- Fixed: Removed prefab names that do not exist in the game, which kept chests from ever counting as full and caused them to reload and save constantly
 
 ### v0.1.0
 
