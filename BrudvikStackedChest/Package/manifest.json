@@ -1,8 +1,8 @@
 ﻿{
-  "name": "JotunnModStub",
-  "description": "",
+  "name": "BrudvikStackedChest",
+  "description": "Chests that restock their items automatically, with Full, Linear and Discovered modes.",
   "version_number": "0.2.0",
-  "website_url": "",
+  "website_url": "https://github.com/brudvik/BrudvikStackedChest",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2351",
     "ValheimModding-Jotunn-2.30.2"
