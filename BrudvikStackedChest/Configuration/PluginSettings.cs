@@ -41,6 +41,21 @@ namespace BrudvikStackedChest.Configuration
         public ConfigEntry<int> UnlockStacks { get; }
 
         /// <summary>
+        /// When enabled, chests keep their contents sorted from the top left, unlimited items first.
+        /// </summary>
+        public ConfigEntry<bool> SortContents { get; }
+
+        /// <summary>
+        /// When enabled, the front of a chest shows whether it is empty and how full it is.
+        /// </summary>
+        public ConfigEntry<bool> ShowIndicators { get; }
+
+        /// <summary>
+        /// When enabled, the contents of the chest under the crosshair are shown as item icons.
+        /// </summary>
+        public ConfigEntry<bool> ShowHoverPanel { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PluginSettings"/> class and binds all entries.
         /// </summary>
         /// <param name="config">The plugin's configuration file.</param>
@@ -60,6 +75,19 @@ namespace BrudvikStackedChest.Configuration
             UnlockStacks = config.BindConfig("General", "UnlockStacks", 1,
                 "Linear mode: the number of full stacks of an item a chest must hold before the item is unlocked.",
                 synced: true, acceptableValues: new AcceptableValueRange<int>(1, 10));
+
+            SortContents = config.BindConfig("General", "SortContents", true,
+                "Keep the chest contents sorted from the top left: unlimited items first, then items stored by players, " +
+                "each by item type and name. Turn off to arrange the chests yourself; new items are then placed in the " +
+                "first free slot from the top.",
+                synced: true);
+
+            ShowIndicators = config.BindConfig("Display", "ShowIndicators", true,
+                "Grey out the icon on the front of empty chests and show bars under it: how many slots are used, and " +
+                "in the Linear and Discovered modes how many of the chest's items are unlimited.", synced: false);
+
+            ShowHoverPanel = config.BindConfig("Display", "ShowHoverPanel", true,
+                "Show the contents of the chest you look at as item icons below the crosshair.", synced: false);
 
             foreach (ChestCategory category in Enum.GetValues(typeof(ChestCategory)))
             {

@@ -8,6 +8,7 @@ using BrudvikStackedChest.Helpers;
 using BrudvikStackedChest.Models;
 using BrudvikStackedChest.Patches.Containers;
 using BrudvikStackedChest.Patches.Gui;
+using BrudvikStackedChest.Patches.Inventories;
 using BrudvikStackedChest.Patches.Players;
 using BrudvikStackedChest.Piece;
 using BrudvikStackedChest.Utils;
@@ -15,6 +16,7 @@ using HarmonyLib;
 using Jotunn.Managers;
 using Jotunn.Utils;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace BrudvikStackedChest
 {
@@ -32,7 +34,7 @@ namespace BrudvikStackedChest
         /// </summary>
         public const string PluginGUID = "com.jotunn.BrudvikStackedChest";
         public const string PluginName = "BrudvikStackedChest";
-        public const string PluginVersion = "0.2.0";
+        public const string PluginVersion = "0.3.0";
 
         /// <summary>
         /// List to store custom pieces (chests) added by the plugin.
@@ -50,6 +52,10 @@ namespace BrudvikStackedChest
         private WorldProgress worldProgress = null!;
         private ChestSupply chestSupply = null!;
         private ChestProgressUi progressUi = null!;
+        private ChestHoverPanel hoverPanel = null!;
+
+        // Inventories do not know their container; the inventory patches need to recognize our chests.
+        private readonly ConditionalWeakTable<Inventory, Container> chestInventories = new();
 
         /// <summary>
         /// Awake method is called when the script instance is being loaded.
@@ -62,6 +68,7 @@ namespace BrudvikStackedChest
             worldProgress = new WorldProgress(PluginName);
             chestSupply = new ChestSupply(settings, itemCatalog, worldProgress);
             progressUi = new ChestProgressUi(chestSupply, FindPiece);
+            hoverPanel = new ChestHoverPanel(chestSupply, FindPiece, () => settings.ShowHoverPanel.Value);
 
             Config.SettingChanged += (_, _) => HandleSettingsChanged();
             SynchronizationManager.OnConfigurationSynchronized += (_, _) => HandleSettingsChanged();
@@ -76,6 +83,9 @@ namespace BrudvikStackedChest
             harmony.PatchAll();
 
             ContainerPatch.ContainerCheckForChangesPatched += HandleContainerCheckForChanges;
+            ContainerPatch.ContainerChangedPatched += HandleContainerChanged;
+            InventoryPatch.InventoryAddingItemPatched += HandleInventoryAddingItem;
+            InventoryPatch.InventoryMoveAllPatched += HandleInventoryMoveAll;
             ContainerPatch.ContainerDropAllItemsPatched += HandleContainerDropAllItemsPatched;
             ContainerPatch.ContainerHoverTextPatched += progressUi.HandleContainerHoverText;
             InventoryGuiPatch.InventoryGridUpdatedPatched += progressUi.HandleGridUpdated;
@@ -85,6 +95,11 @@ namespace BrudvikStackedChest
             PlayerPatch.PlayerKnownItemPatched += HandlePlayerKnownItem;
 
             Jotunn.Logger.LogInfo($"{PluginName} v{PluginVersion} has loaded!");
+        }
+
+        private void Update()
+        {
+            hoverPanel?.Update();
         }
 
         private void HandleSettingsChanged()
@@ -125,8 +140,75 @@ namespace BrudvikStackedChest
             var piece = FindPiece(e?.Container);
             if (piece == null) return;
 
-            ChestEffects.UpdateGlow(e!.Container, piece.Color, piece.CustomPieceConfig.ItemCategory, chestSupply);
-            e.Container.Restock(piece.CustomPieceConfig.ItemCategory, chestSupply);
+            RegisterChest(e!.Container);
+            ChestEffects.UpdateGlow(e.Container, piece.Color, piece.CustomPieceConfig.ItemCategory, chestSupply);
+            e.Container.Restock(piece.CustomPieceConfig.ItemCategory, chestSupply, settings.SortContents.Value);
+            UpdateIndicator(e.Container, piece);
+        }
+
+        /// <summary>
+        /// Restocks one of our chests as soon as its contents change, so building several pieces in a row from a
+        /// chest does not run it dry before the next periodic check.
+        /// </summary>
+        private void HandleContainerChanged(object sender, ContainerChangedPatchEvent e)
+        {
+            var piece = FindPiece(e?.Container);
+            if (piece == null) return;
+
+            RegisterChest(e!.Container);
+            e.Container.Restock(piece.CustomPieceConfig.ItemCategory, chestSupply, settings.SortContents.Value);
+            UpdateIndicator(e.Container, piece);
+        }
+
+        private void UpdateIndicator(Container container, CustomPieceExtended piece)
+        {
+            var inventory = container.GetInventory();
+            if (inventory == null || (ZNet.instance != null && ZNet.instance.IsDedicated())) return;
+
+            if (!container.TryGetComponent(out ChestIndicator indicator)) indicator = container.gameObject.AddComponent<ChestIndicator>();
+            indicator.Refresh(inventory, piece.CustomPieceConfig.ItemCategory, chestSupply, settings.ShowIndicators.Value);
+        }
+
+        /// <summary>
+        /// Lets an item put into one of our chests disappear when the chest already holds it without limit, instead
+        /// of forming yet another stack.
+        /// </summary>
+        private void HandleInventoryAddingItem(object sender, InventoryAddingItemPatchEvent e)
+        {
+            if (!TryGetChest(e.Inventory, out _, out var category)) return;
+
+            e.Absorb = chestSupply.AbsorbsDeposit(category, e.Inventory, e.Item);
+        }
+
+        /// <summary>
+        /// Makes Take all on one of our chests take only the items players stored themselves.
+        /// </summary>
+        private void HandleInventoryMoveAll(object sender, InventoryMoveAllPatchEvent e)
+        {
+            if (!TryGetChest(e.FromInventory, out var container, out var category)) return;
+
+            e.Handled = true;
+
+            // Until the world progress is known, unlimited stacks cannot be told apart from stored items.
+            if (chestSupply.IsReady) container.MoveStoredItemsTo(e.Inventory, category, chestSupply);
+        }
+
+        private void RegisterChest(Container container)
+        {
+            var inventory = container.GetInventory();
+            if (inventory != null) chestInventories.GetValue(inventory, _ => container);
+        }
+
+        private bool TryGetChest(Inventory inventory, out Container container, out ChestCategory category)
+        {
+            category = ChestCategory.None;
+            if (!chestInventories.TryGetValue(inventory, out container) || container == null) return false;
+
+            var piece = FindPiece(container);
+            if (piece == null) return false;
+
+            category = piece.CustomPieceConfig.ItemCategory;
+            return true;
         }
 
         private void HandlePlayerSpawned(object sender, PlayerSpawnedPatchEvent e)

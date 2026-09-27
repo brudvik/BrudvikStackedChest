@@ -25,6 +25,50 @@ namespace BrudvikStackedChest.Helpers
 
         private static readonly HashSet<ChestCategory> FoodCategory = new() { ChestCategory.Food };
 
+        // Items the rules place in a surprising chest, because of where the game happens to drop them.
+        // The Include setting still wins over these.
+        private static readonly Dictionary<string, ChestCategory> BuiltInPlacements = new()
+        {
+            { "Coal", ChestCategory.Wood },
+            { "Obsidian", ChestCategory.Stone },
+            { "Crystal", ChestCategory.Stone },
+            { "SulfurStone", ChestCategory.Stone },
+            { "StoneRock", ChestCategory.Stone },
+            { "Chain", ChestCategory.Metal },
+            { "Feathers", ChestCategory.Animal },
+            { "LeatherScraps", ChestCategory.Animal },
+            { "WitheredBone", ChestCategory.Animal },
+            { "AsksvinCarrionNeck", ChestCategory.Animal },
+            { "AsksvinCarrionPelvic", ChestCategory.Animal },
+            { "AsksvinCarrionRibcage", ChestCategory.Animal },
+            { "AsksvinCarrionSkull", ChestCategory.Animal },
+            { "HardAntler", ChestCategory.Animal },
+            { "WolfHairBundle", ChestCategory.Animal },
+            { "SurtlingCore", ChestCategory.Material },
+            { "Ectoplasm", ChestCategory.Material },
+            { "Flax", ChestCategory.Material },
+            { "Dandelion", ChestCategory.Material },
+            { "JuteRed", ChestCategory.Material },
+            { "Tar", ChestCategory.Material },
+            { "DyrnwynHiltFragment", ChestCategory.Material },
+            { "MoldArmorGoldChest", ChestCategory.Material },
+            { "MoldArmorGoldHelmet", ChestCategory.Material },
+            { "MoldArmorGoldLegs", ChestCategory.Material },
+            { "MoldArmormediumChest", ChestCategory.Material },
+            { "MoldArmorMediumHelmet", ChestCategory.Material },
+            { "MoldArmorMediumLegs", ChestCategory.Material },
+            { "MoldArmorMageChest", ChestCategory.Material },
+            { "MoldArmorMageHelmet", ChestCategory.Material },
+            { "MoldArmorMageLegs", ChestCategory.Material },
+            { "MoldKeys", ChestCategory.Material },
+            { "GemstoneRed", ChestCategory.Treasure },
+            { "GemstoneBlue", ChestCategory.Treasure },
+            { "GemstoneGreen", ChestCategory.Treasure },
+            { "QueenDrop", ChestCategory.Treasure },
+            { "FaderDrop", ChestCategory.Treasure },
+            { "FrozenKingDrop", ChestCategory.Treasure }
+        };
+
         private readonly ObjectDB objectDb;
         private readonly ZNetScene scene;
         private readonly PluginSettings settings;
@@ -72,6 +116,7 @@ namespace BrudvikStackedChest.Helpers
             var candidates = SelectCandidates(unobtainable);
 
             ApplyIncludes();
+            ApplyBuiltInPlacements(candidates);
             AssignEach(candidates, ByItemType);
             AssignEach(candidates, (_, shared) => shared.m_value > 0 ? ChestCategory.Treasure : ChestCategory.None);
             AssignEach(candidates, ByConsumable);
@@ -106,7 +151,8 @@ namespace BrudvikStackedChest.Helpers
 
                 items[prefab.name] = shared;
 
-                if (shared.m_skillType == Skills.SkillType.Fishing && !string.IsNullOrEmpty(shared.m_ammoType))
+                if (!string.IsNullOrEmpty(shared.m_ammoType) &&
+                    (shared.m_skillType == Skills.SkillType.Fishing || IsFishingRod(shared)))
                 {
                     fishingAmmoTypes.Add(shared.m_ammoType);
                 }
@@ -378,7 +424,7 @@ namespace BrudvikStackedChest.Helpers
                 case ItemType.Bow:
                 case ItemType.Shield:
                 case ItemType.Attach_Atgeir:
-                    return IsToolSkill(shared.m_skillType) ? ChestCategory.Tools : ChestCategory.Weapon;
+                    return IsToolSkill(shared.m_skillType) || IsFishingRod(shared) ? ChestCategory.Tools : ChestCategory.Weapon;
                 default:
                     return ChestCategory.None;
             }
@@ -387,6 +433,30 @@ namespace BrudvikStackedChest.Helpers
         private static bool IsToolSkill(Skills.SkillType skill)
         {
             return skill == Skills.SkillType.Pickaxes || skill == Skills.SkillType.Fishing || skill == Skills.SkillType.Farming;
+        }
+
+        // Recognizes the fishing rod by the float it casts, whatever skill it is set to.
+        private static bool IsFishingRod(SharedData shared)
+        {
+            return CastsFishingFloat(shared.m_attack) || CastsFishingFloat(shared.m_secondaryAttack);
+        }
+
+        private static bool CastsFishingFloat(Attack? attack)
+        {
+            var projectile = attack?.m_attackProjectile;
+            if (projectile == null) return false;
+            if (projectile.GetComponentInChildren<FishingFloat>(true) != null) return true;
+
+            var spawned = projectile.GetComponent<Projectile>()?.m_spawnOnHit;
+            return spawned != null && spawned.GetComponentInChildren<FishingFloat>(true) != null;
+        }
+
+        private void ApplyBuiltInPlacements(List<string> candidates)
+        {
+            foreach (var name in candidates)
+            {
+                if (!assigned.ContainsKey(name) && BuiltInPlacements.TryGetValue(name, out var category)) assigned[name] = category;
+            }
         }
 
         private ChestCategory ByConsumable(string name, SharedData shared)

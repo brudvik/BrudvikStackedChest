@@ -1,5 +1,6 @@
 using BrudvikStackedChest.Configuration;
 using BrudvikStackedChest.Constants;
+using System;
 using System.Collections.Generic;
 
 namespace BrudvikStackedChest.Helpers
@@ -17,6 +18,7 @@ namespace BrudvikStackedChest.Helpers
         private Dictionary<ChestCategory, IReadOnlyList<string>> itemsByCategory = new();
         private Dictionary<ChestCategory, HashSet<string>> setsByCategory = new();
         private Dictionary<string, ItemDrop.ItemData.SharedData> sharedByName = new();
+        private Dictionary<string, int> largestRequirement = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemCatalog"/> class.
@@ -68,6 +70,16 @@ namespace BrudvikStackedChest.Helpers
             return EnsureBuilt() && sharedByName.TryGetValue(prefabName, out var shared) ? shared : null;
         }
 
+        /// <summary>
+        /// Gets the largest amount of an item that a single recipe, upgrade or build piece requires.
+        /// </summary>
+        /// <param name="prefabName">The item prefab name.</param>
+        /// <returns>The largest required amount, or 0 if nothing requires the item.</returns>
+        public int GetLargestRequirement(string prefabName)
+        {
+            return EnsureBuilt() && largestRequirement.TryGetValue(prefabName, out var amount) ? amount : 0;
+        }
+
         private bool EnsureBuilt()
         {
             var objectDb = ObjectDB.instance;
@@ -88,8 +100,54 @@ namespace BrudvikStackedChest.Helpers
                 }
             }
 
+            largestRequirement = CollectLargestRequirements(objectDb);
             builtFor = objectDb;
             return true;
+        }
+
+        private static Dictionary<string, int> CollectLargestRequirements(ObjectDB objectDb)
+        {
+            var result = new Dictionary<string, int>();
+
+            foreach (var recipe in objectDb.m_recipes)
+            {
+                if (recipe == null || recipe.m_resources == null) continue;
+
+                var maxQuality = recipe.m_item == null ? 1 : Math.Max(1, recipe.m_item.m_itemData.m_shared.m_maxQuality);
+                for (var quality = 1; quality <= maxQuality; quality++)
+                {
+                    AddRequirements(result, recipe.m_resources, quality);
+                }
+            }
+
+            // Build pieces come from the piece tables of the building tools.
+            var tables = new HashSet<PieceTable>();
+            foreach (var prefab in objectDb.m_items)
+            {
+                var itemDrop = prefab == null ? null : prefab.GetComponent<ItemDrop>();
+                var table = itemDrop == null ? null : itemDrop.m_itemData?.m_shared?.m_buildPieces;
+                if (table == null || !tables.Add(table) || table.m_pieces == null) continue;
+
+                foreach (var piecePrefab in table.m_pieces)
+                {
+                    var piece = piecePrefab == null ? null : piecePrefab.GetComponent<global::Piece>();
+                    if (piece != null && piece.m_resources != null) AddRequirements(result, piece.m_resources, 1);
+                }
+            }
+
+            return result;
+        }
+
+        private static void AddRequirements(Dictionary<string, int> result, global::Piece.Requirement[] requirements, int quality)
+        {
+            foreach (var requirement in requirements)
+            {
+                if (requirement == null || requirement.m_resItem == null) continue;
+
+                var name = requirement.m_resItem.name;
+                var amount = requirement.GetAmount(quality);
+                if (!result.TryGetValue(name, out var current) || amount > current) result[name] = amount;
+            }
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿{
   "name": "BrudvikStackedChest",
   "description": "Chests that restock their items automatically, with Full, Linear and Discovered modes.",
-  "version_number": "0.2.0",
+  "version_number": "0.3.0",
   "website_url": "https://github.com/brudvik/BrudvikStackedChest",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2351",

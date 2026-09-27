@@ -4,6 +4,7 @@ using BrudvikStackedChest.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace BrudvikStackedChest.Helpers
 {
@@ -40,6 +41,9 @@ namespace BrudvikStackedChest.Helpers
     /// </summary>
     public class ChestSupply
     {
+        // Guards against modded recipes with extreme amounts filling a chest with one item.
+        private const int MaxStacksPerItem = 10;
+
         private readonly PluginSettings settings;
         private readonly ItemCatalog catalog;
         private readonly WorldProgress progress;
@@ -80,6 +84,65 @@ namespace BrudvikStackedChest.Helpers
             if (item.m_dropPrefab == null) return false;
 
             return IsSupplied(mode, category, item.m_dropPrefab.name, item.m_shared);
+        }
+
+        /// <summary>
+        /// Checks whether a stack in a chest belongs to the chest itself, so it is never taken by Take all and is
+        /// deleted instead of dropped when the chest is destroyed. Items that do not stack only count when the chest
+        /// adds them itself and they are unchanged, so upgraded or crafted gear a player stored is kept.
+        /// </summary>
+        /// <param name="mode">The chest mode to evaluate.</param>
+        /// <param name="category">The chest's category; <see cref="ChestCategory.None"/> accepts any item.</param>
+        /// <param name="item">The stack in the chest.</param>
+        /// <returns>True if the stack is supplied by the chest.</returns>
+        public bool IsStock(ChestMode mode, ChestCategory category, ItemDrop.ItemData item)
+        {
+            if (!IsSupplied(mode, category, item)) return false;
+            if (IsStackable(item.m_shared)) return true;
+
+            return category != ChestCategory.None && item.m_dropPrefab != null &&
+                   catalog.Contains(category, item.m_dropPrefab.name) &&
+                   item.m_quality <= 1 && item.m_crafterID == 0;
+        }
+
+        /// <summary>
+        /// Gets the number of full stacks a chest keeps of an unlimited item: one, or more when a single recipe or
+        /// build piece needs more than one stack.
+        /// </summary>
+        /// <param name="prefabName">The item prefab name.</param>
+        /// <param name="shared">The item's shared data.</param>
+        /// <returns>The number of stacks.</returns>
+        public int GetStackCount(string prefabName, ItemDrop.ItemData.SharedData shared)
+        {
+            if (!IsStackable(shared)) return 1;
+
+            var required = catalog.GetLargestRequirement(prefabName);
+            var stacks = (required + shared.m_maxStackSize - 1) / shared.m_maxStackSize;
+            return Mathf.Clamp(stacks, 1, MaxStacksPerItem);
+        }
+
+        /// <summary>
+        /// Checks whether an item put into a chest should disappear instead of forming a new stack, because the chest
+        /// already holds it without limit.
+        /// </summary>
+        /// <param name="category">The chest's category; <see cref="ChestCategory.None"/> accepts any item.</param>
+        /// <param name="inventory">The chest's inventory.</param>
+        /// <param name="item">The item being put into the chest.</param>
+        /// <returns>True if the item should be absorbed.</returns>
+        public bool AbsorbsDeposit(ChestCategory category, Inventory inventory, ItemDrop.ItemData item)
+        {
+            if (!IsReady || item.m_dropPrefab == null || !IsStackable(item.m_shared)) return false;
+            if (!IsSupplied(Mode, category, item)) return false;
+
+            var name = item.m_dropPrefab.name;
+            var present = false;
+            foreach (var stored in inventory.GetAllItems())
+            {
+                // Moving a stack within the chest must never delete it.
+                if (stored == item) return false;
+                if (stored.m_dropPrefab != null && stored.m_dropPrefab.name == name) present = true;
+            }
+            return present;
         }
 
         /// <summary>
