@@ -302,9 +302,22 @@ namespace BrudvikStackedChest.Extensions
         /// Checks that the container is a placed, networked instance owned by this peer. Only the owner may change
         /// it; changes made elsewhere would be overwritten or fight over the shared data.
         /// </summary>
-        private static bool IsOwnedByMe(Container container)
+        /// <param name="container">The container to check.</param>
+        /// <returns>True if this peer owns the container.</returns>
+        public static bool IsOwnedByMe(this Container container)
         {
             return container.m_nview != null && container.m_nview.IsValid() && container.m_nview.IsOwner();
+        }
+
+        /// <summary>
+        /// Gets an id for the container that stays the same across game sessions.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <returns>The id of the container's network object, or null if it is not a placed, networked instance.</returns>
+        public static string? GetChestId(this Container container)
+        {
+            var zdo = container.m_nview != null && container.m_nview.IsValid() ? container.m_nview.GetZDO() : null;
+            return zdo == null ? null : $"{zdo.m_uid.UserID}:{zdo.m_uid.ID}";
         }
     }
 }

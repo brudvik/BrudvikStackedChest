@@ -280,6 +280,47 @@ namespace BrudvikStackedChest.Helpers
             progress.Unlock(prefabName);
         }
 
+        /// <summary>
+        /// Checks whether an item is unlimited in the chest it is placed in.
+        /// </summary>
+        /// <param name="prefabName">The item prefab name.</param>
+        /// <param name="shared">The item's shared data.</param>
+        /// <returns>True if the item's chest keeps it full.</returns>
+        public bool IsUnlimited(string prefabName, ItemDrop.ItemData.SharedData shared)
+        {
+            var category = catalog.GetCategory(prefabName);
+            return category != ChestCategory.None && IsSupplied(Mode, category, prefabName, shared);
+        }
+
+        /// <summary>
+        /// Adds up, per item, how much a chest holds of the items it can still unlock in Linear mode.
+        /// </summary>
+        /// <param name="category">The chest's category; <see cref="ChestCategory.None"/> accepts any item.</param>
+        /// <param name="inventory">The chest's inventory.</param>
+        /// <returns>The stored amount per item prefab name.</returns>
+        public Dictionary<string, int> GetUnlockableAmounts(ChestCategory category, Inventory inventory)
+        {
+            var result = new Dictionary<string, int>();
+            foreach (var item in inventory.GetAllItems())
+            {
+                if (item.m_dropPrefab == null) continue;
+
+                var name = item.m_dropPrefab.name;
+                if (!result.ContainsKey(name) && !CanUnlock(category, name, item.m_shared)) continue;
+
+                result.TryGetValue(name, out var amount);
+                result[name] = amount + item.m_stack;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Checks whether an item stacks. Items that do not stack are never duplicated in the progression modes.
+        /// </summary>
+        /// <param name="shared">The item's shared data.</param>
+        /// <returns>True if more than one of the item fits in a slot.</returns>
+        public static bool IsStackable(ItemDrop.ItemData.SharedData shared) => shared.m_maxStackSize > 1;
+
         private bool IsSupplied(ChestMode mode, ChestCategory category, string prefabName, ItemDrop.ItemData.SharedData shared)
         {
             if (mode == ChestMode.Full) return true;
@@ -287,9 +328,6 @@ namespace BrudvikStackedChest.Helpers
 
             return mode == ChestMode.Linear ? progress.IsUnlocked(prefabName) : progress.IsDiscovered(shared.m_name);
         }
-
-        // Items that do not stack, like weapons and armor, are never duplicated in the progression modes.
-        private static bool IsStackable(ItemDrop.ItemData.SharedData shared) => shared.m_maxStackSize > 1;
 
         private bool BelongsIn(ChestCategory category, string prefabName)
         {

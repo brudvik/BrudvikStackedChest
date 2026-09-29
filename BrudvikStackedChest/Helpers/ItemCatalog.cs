@@ -18,6 +18,7 @@ namespace BrudvikStackedChest.Helpers
         private Dictionary<ChestCategory, IReadOnlyList<string>> itemsByCategory = new();
         private Dictionary<ChestCategory, HashSet<string>> setsByCategory = new();
         private Dictionary<string, ItemDrop.ItemData.SharedData> sharedByName = new();
+        private Dictionary<string, ChestCategory> categoryByName = new();
         private Dictionary<string, int> largestRequirement = new();
 
         /// <summary>
@@ -71,6 +72,16 @@ namespace BrudvikStackedChest.Helpers
         }
 
         /// <summary>
+        /// Gets the chest an item is placed in.
+        /// </summary>
+        /// <param name="prefabName">The item prefab name.</param>
+        /// <returns>The chest category, or <see cref="ChestCategory.None"/> if the item is in no chest.</returns>
+        public ChestCategory GetCategory(string prefabName)
+        {
+            return EnsureBuilt() && categoryByName.TryGetValue(prefabName, out var category) ? category : ChestCategory.None;
+        }
+
+        /// <summary>
         /// Gets the largest amount of an item that a single recipe, upgrade or build piece requires.
         /// </summary>
         /// <param name="prefabName">The item prefab name.</param>
@@ -90,11 +101,14 @@ namespace BrudvikStackedChest.Helpers
             itemsByCategory = new ItemSorter(objectDb, scene, settings).Sort();
             setsByCategory = new Dictionary<ChestCategory, HashSet<string>>();
             sharedByName = new Dictionary<string, ItemDrop.ItemData.SharedData>();
+            categoryByName = new Dictionary<string, ChestCategory>();
             foreach (var pair in itemsByCategory)
             {
                 setsByCategory[pair.Key] = new HashSet<string>(pair.Value);
                 foreach (var name in pair.Value)
                 {
+                    if (!categoryByName.ContainsKey(name)) categoryByName[name] = pair.Key;
+
                     var itemDrop = objectDb.GetItemPrefab(name)?.GetComponent<ItemDrop>();
                     if (itemDrop != null) sharedByName[name] = itemDrop.m_itemData.m_shared;
                 }

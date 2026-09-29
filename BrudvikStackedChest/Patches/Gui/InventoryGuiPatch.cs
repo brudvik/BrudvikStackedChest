@@ -1,6 +1,8 @@
 using BrudvikStackedChest.Events;
 using HarmonyLib;
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace BrudvikStackedChest.Patches.Gui
 {
@@ -55,6 +57,21 @@ namespace BrudvikStackedChest.Patches.Gui
         }
 
         /// <summary>
+        /// Event triggered after the inventory screen has been shown.
+        /// </summary>
+        public static event EventHandler<InventoryGuiPatchEvent>? InventoryShownPatched;
+
+        /// <summary>
+        /// Event triggered after the inventory screen has been hidden.
+        /// </summary>
+        public static event EventHandler<InventoryGuiPatchEvent>? InventoryHiddenPatched;
+
+        /// <summary>
+        /// Event triggered after the inventory screen has opened its skills, texts, trophies or achievements panel.
+        /// </summary>
+        public static event EventHandler<InventoryGuiPatchEvent>? InventoryPanelOpenedPatched;
+
+        /// <summary>
         /// Harmony patch for InventoryGui.UpdateContainer.
         /// </summary>
         [HarmonyPatch(typeof(InventoryGui), "UpdateContainer")]
@@ -65,6 +82,59 @@ namespace BrudvikStackedChest.Patches.Gui
                 if (__instance != null)
                 {
                     ContainerPanelUpdatedPatched?.Invoke(null, new ContainerPanelUpdatedPatchEvent { Gui = __instance });
+                }
+            }
+        }
+
+        /// <summary>
+        /// Harmony patch for InventoryGui.Show.
+        /// </summary>
+        [HarmonyPatch(typeof(InventoryGui), "Show")]
+        public static class InventoryGuiShowPatch
+        {
+            static void Postfix(InventoryGui __instance)
+            {
+                if (__instance != null)
+                {
+                    InventoryShownPatched?.Invoke(null, new InventoryGuiPatchEvent { Gui = __instance });
+                }
+            }
+        }
+
+        /// <summary>
+        /// Harmony patch for InventoryGui.Hide.
+        /// </summary>
+        [HarmonyPatch(typeof(InventoryGui), "Hide")]
+        public static class InventoryGuiHidePatch
+        {
+            static void Postfix(InventoryGui __instance)
+            {
+                if (__instance != null)
+                {
+                    InventoryHiddenPatched?.Invoke(null, new InventoryGuiPatchEvent { Gui = __instance });
+                }
+            }
+        }
+
+        /// <summary>
+        /// Harmony patch for the methods that open the inventory screen's own panels.
+        /// </summary>
+        [HarmonyPatch]
+        public static class InventoryGuiOpenPanelPatch
+        {
+            static IEnumerable<MethodBase> TargetMethods()
+            {
+                yield return AccessTools.Method(typeof(InventoryGui), "OnOpenSkills");
+                yield return AccessTools.Method(typeof(InventoryGui), "OnOpenTexts");
+                yield return AccessTools.Method(typeof(InventoryGui), "OnOpenTrophies");
+                yield return AccessTools.Method(typeof(InventoryGui), "OnOpenAchievements");
+            }
+
+            static void Postfix(InventoryGui __instance)
+            {
+                if (__instance != null)
+                {
+                    InventoryPanelOpenedPatched?.Invoke(null, new InventoryGuiPatchEvent { Gui = __instance });
                 }
             }
         }

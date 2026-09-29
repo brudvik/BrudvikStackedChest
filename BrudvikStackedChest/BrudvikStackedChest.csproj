@@ -78,6 +78,7 @@
     <Compile Include="Events\ContainerHoverTextPatchEvent.cs" />
     <Compile Include="Events\ContainerPanelUpdatedPatchEvent.cs" />
     <Compile Include="Events\InventoryGridUpdatedPatchEvent.cs" />
+    <Compile Include="Events\InventoryGuiPatchEvent.cs" />
     <Compile Include="Events\InventoryAddingItemPatchEvent.cs" />
     <Compile Include="Events\InventoryMoveAllPatchEvent.cs" />
     <Compile Include="Events\ItemTooltipPatchEvent.cs" />
@@ -88,6 +89,7 @@
     <Compile Include="Extensions\InventoryExtension.cs" />
     <Compile Include="Extensions\Texture2dExtension.cs" />
     <Compile Include="Helpers\AssetUtilsExtended.cs" />
+    <Compile Include="Helpers\BiomeCatalog.cs" />
     <Compile Include="Helpers\ChestEffects.cs" />
     <Compile Include="Helpers\ChestSupply.cs" />
     <Compile Include="Helpers\ItemCatalog.cs" />
@@ -102,6 +104,7 @@
     <Compile Include="Piece\CustomChestManager.cs" />
     <Compile Include="Piece\CustomPieceConfigExtended.cs" />
     <Compile Include="Piece\CustomPieceExtended.cs" />
+    <Compile Include="Piece\GatheringPanel.cs" />
     <Compile Include="Patches\Containers\ContainerPatch.cs" />
     <Compile Include="Patches\Gui\InventoryGuiPatch.cs" />
     <Compile Include="Patches\Gui\MessageHudPatch.cs" />

@@ -15,8 +15,10 @@ using BrudvikStackedChest.Utils;
 using HarmonyLib;
 using Jotunn.Managers;
 using Jotunn.Utils;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace BrudvikStackedChest
 {
@@ -53,7 +55,11 @@ namespace BrudvikStackedChest
         private ChestSupply chestSupply = null!;
         private ChestProgressUi progressUi = null!;
         private ChestHoverPanel hoverPanel = null!;
+        private BiomeCatalog biomeCatalog = null!;
         private ChestLearnUi learnUi = null!;
+        private GatheringPanel gatheringPanel = null!;
+        private readonly SpriteLoader spriteLoader = new(PluginName);
+        private Sprite? gatheringIcon;
 
         // Inventories do not know their container; the inventory patches need to recognize our chests.
         private readonly ConditionalWeakTable<Inventory, Container> chestInventories = new();
@@ -72,7 +78,9 @@ namespace BrudvikStackedChest
             chestSupply = new ChestSupply(settings, itemCatalog, worldProgress);
             progressUi = new ChestProgressUi(chestSupply, FindPiece);
             hoverPanel = new ChestHoverPanel(chestSupply, FindPiece, () => settings.ShowHoverPanel.Value);
+            biomeCatalog = new BiomeCatalog(settings);
             learnUi = new ChestLearnUi(FindPiece, () => settings.LearnAll.Value, () => settings.LearnTrophies.Value);
+            gatheringPanel = new GatheringPanel(itemCatalog, biomeCatalog, chestSupply, worldProgress, GetChestName, LoadGatheringIcon);
 
             Config.SettingChanged += (_, _) => HandleSettingsChanged();
             SynchronizationManager.OnConfigurationSynchronized += (_, _) => HandleSettingsChanged();
@@ -102,6 +110,9 @@ namespace BrudvikStackedChest
             InventoryGuiPatch.ItemTooltipPatched += learnUi.HandleItemTooltip;
             InventoryGuiPatch.ContainerPanelUpdatedPatched += learnUi.HandleContainerPanelUpdated;
             MessageHudPatch.UnlockMessagePatched += learnUi.HandleUnlockMessage;
+            InventoryGuiPatch.InventoryShownPatched += gatheringPanel.HandleInventoryShown;
+            InventoryGuiPatch.InventoryHiddenPatched += gatheringPanel.HandleClose;
+            InventoryGuiPatch.InventoryPanelOpenedPatched += gatheringPanel.HandleClose;
 
             Jotunn.Logger.LogInfo($"{PluginName} v{PluginVersion} has loaded!");
         }
@@ -109,6 +120,7 @@ namespace BrudvikStackedChest
         private void Update()
         {
             hoverPanel?.Update();
+            gatheringPanel?.Update();
         }
 
         private void HandleSettingsChanged()
@@ -138,6 +150,23 @@ namespace BrudvikStackedChest
             if (piece == null) return;
 
             e!.Container.RemoveSuppliedItems(piece.CustomPieceConfig.ItemCategory, chestSupply);
+
+            var chestId = e.Container.GetChestId();
+            if (chestId != null && e.Container.IsOwnedByMe()) worldProgress.ReportStock(chestId, new Dictionary<string, int>());
+        }
+
+        /// <summary>
+        /// Tells the server how close the chest is to unlocking each of its items, for the gathering panel.
+        /// </summary>
+        private void ReportStock(Container container, ChestCategory category)
+        {
+            if (settings.Mode.Value != ChestMode.Linear || !chestSupply.IsReady || !container.IsOwnedByMe()) return;
+
+            var inventory = container.GetInventory();
+            var chestId = container.GetChestId();
+            if (inventory == null || chestId == null) return;
+
+            worldProgress.ReportStock(chestId, chestSupply.GetUnlockableAmounts(category, inventory));
         }
 
         /// <summary>
@@ -146,6 +175,27 @@ namespace BrudvikStackedChest
         private void HandleItemsLearned(List<string> itemTokens)
         {
             if (settings.Mode.Value == ChestMode.Discovered) worldProgress.Discover(itemTokens);
+        }
+
+        private string? GetChestName(ChestCategory category)
+        {
+            if (category == ChestCategory.None) return null;
+
+            var piece = customPieces.Find(candidate => candidate.CustomPieceConfig.ItemCategory == category);
+            return piece == null ? null : Texts.Localize(piece.Tooltip);
+        }
+
+        private Sprite? LoadGatheringIcon()
+        {
+            try
+            {
+                if (gatheringIcon == null) gatheringIcon = spriteLoader.Load("strg_081_round.png");
+            }
+            catch (Exception ex)
+            {
+                Jotunn.Logger.LogWarning($"Could not load the gathering panel icon: {ex.Message}");
+            }
+            return gatheringIcon;
         }
 
         /// <summary>
@@ -161,6 +211,7 @@ namespace BrudvikStackedChest
             ChestEffects.UpdateGlow(e.Container, piece.Color, piece.CustomPieceConfig.ItemCategory, chestSupply);
             e.Container.Restock(piece.CustomPieceConfig.ItemCategory, chestSupply, settings.SortContents.Value);
             UpdateIndicator(e.Container, piece);
+            ReportStock(e.Container, piece.CustomPieceConfig.ItemCategory);
         }
 
         /// <summary>
