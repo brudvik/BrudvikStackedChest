@@ -80,6 +80,33 @@ In Linear and Discovered:
 
 Both can be switched off in the `Display` section of the configuration. Every player sees the same thing, without any extra network traffic.
 
+### Learning Items
+
+Items you take out of a chest teach your character new recipes and build pieces, just like items you pick up. New players on a server often have not touched most of the chest contents yet:
+
+- Items in an open chest that you have not learned yet are marked with a yellow **!**, and their tooltip says so
+- A **Learn all** button next to "Place stacks" teaches you every item in the chest at once, with one message instead of one per item and recipe
+- Learning is stored on your character, not in the world
+- The `LearnAll` setting removes the button, and `LearnTrophies` decides whether it also adds trophies to your trophy list
+
+### Gathering Progress
+
+The player screen (Tab) has an extra button next to the Skills, Compendium, Trophies and Achievements buttons. It opens a panel that lists what can be gathered in the biome you are in:
+
+- Every item that trees, rocks, plants and creatures in the biome drop, plus items found in its dungeons. Crafted items are left out
+- Linear mode: a bar with the amount the closest chest in the world holds and the amount still missing. The server remembers the amount in every chest, so chests far away count as well
+- Discovered mode: whether the item has been discovered
+- A gold **∞** for items that are already unlimited
+- How many you carry in your inventory
+- Items that do not stack are greyed out, because they are stored normally
+- The arrows browse the other biomes you have visited
+
+The amounts are saved by the server in `BepInEx/config/BrudvikStackedChest/`. After updating the mod, a chest counts once it has been loaded, which happens when a player comes near it.
+
+### Languages
+
+The mod follows the language chosen in the game settings. English and Norwegian are included; other languages show English.
+
 Switching to a less generous mode removes the unlimited items the new mode no longer supplies, for example everything that is not unlocked when going from Full to Linear.
 
 ---
@@ -115,10 +142,12 @@ The configuration file is `BepInEx/config/com.jotunn.BrudvikStackedChest.cfg`. T
 
 | Section | Setting | Description |
 |---------|---------|-------------|
-| General | DumpItemLists | Writes the generated item list of every chest to the BepInEx log, including items that could not be sorted |
+| General | DumpItemLists | Writes the generated item list of every chest to the BepInEx log, including items that could not be sorted. The items of every biome are written when the gathering panel is first opened |
 | General | Mode | Full, Linear or Discovered, see [Chest Modes](#chest-modes) |
 | General | UnlockStacks | Linear mode: the number of full stacks a chest must hold to unlock an item (1-10, default 1) |
 | General | SortContents | Keeps the chest contents sorted from the top left, unlimited items first (default on). When off, new items are placed in the first free slot from the top |
+| General | LearnAll | Shows a Learn all button on chests that hold items the player has not learned yet (default on) |
+| General | LearnTrophies | Lets the Learn all button learn trophies as well, which adds them to the player's trophy list (default on) |
 | Chest.&lt;Name&gt; | Include | Comma-separated prefab names that are always placed in this chest, overriding the automatic sorting |
 | Chest.&lt;Name&gt; | Exclude | Comma-separated prefab names that are never placed in this chest |
 | Display | ShowIndicators | Greys out the icon of empty chests and shows the slot and unlimited bars on the front of chests (default on, per player) |
@@ -171,7 +200,11 @@ The mod uses several key technologies:
 | Player.AddKnownItem | Postfix | Shares newly discovered items in Discovered mode |
 | InventoryGrid.UpdateGui | Postfix | Shows ∞ on unlimited stacks and unlock progress bars |
 | InventoryGrid.CreateItemTooltip | Postfix | Adds the item's status in the chest to its tooltip |
-| InventoryGui.UpdateContainer | Postfix | Adds the chest's progress to the container title |
+| InventoryGui.UpdateContainer | Postfix | Adds the chest's progress to the container title and shows the Learn all button |
+| InventoryGui.Show | Postfix | Adds the gathering button and panel to the player screen |
+| InventoryGui.Hide | Postfix | Closes the gathering panel |
+| InventoryGui.OnOpenSkills, OnOpenTexts, OnOpenTrophies, OnOpenAchievements | Postfix | Closes the gathering panel when another panel opens |
+| MessageHud.QueueUnlockMsg | Prefix | Leaves out the message for every single item and recipe while Learn all runs |
 
 ---
 
@@ -1177,6 +1210,15 @@ This mod demonstrates several modding techniques:
 ---
 
 ## Changelog
+
+### v0.4.0
+
+- Added: Gathering panel on the player screen, listing the items of the biome you are in with how far each is from being unlimited, the amount in your inventory, and arrows to browse other visited biomes
+- Added: The server keeps track of how much every chest holds towards unlocking its items in Linear mode
+- Added: Items in a chest that you have not learned yet are marked with a yellow !, and a Learn all button teaches them all at once
+- Added: LearnAll and LearnTrophies settings
+- Added: Norwegian translation; all texts follow the language chosen in the game
+- Changed: The build menu shows the chest names instead of their prefab names
 
 ### v0.3.0
 
