@@ -46,6 +46,16 @@ namespace BrudvikStackedChest.Configuration
         public ConfigEntry<bool> SortContents { get; }
 
         /// <summary>
+        /// When enabled, a Learn all button teaches the player the items in a chest they have not learned yet.
+        /// </summary>
+        public ConfigEntry<bool> LearnAll { get; }
+
+        /// <summary>
+        /// When enabled, the Learn all button also adds trophies to the player's trophy list.
+        /// </summary>
+        public ConfigEntry<bool> LearnTrophies { get; }
+
+        /// <summary>
         /// When enabled, the front of a chest shows whether it is empty and how full it is.
         /// </summary>
         public ConfigEntry<bool> ShowIndicators { get; }
@@ -80,6 +90,15 @@ namespace BrudvikStackedChest.Configuration
                 "Keep the chest contents sorted from the top left: unlimited items first, then items stored by players, " +
                 "each by item type and name. Turn off to arrange the chests yourself; new items are then placed in the " +
                 "first free slot from the top.",
+                synced: true);
+
+            LearnAll = config.BindConfig("General", "LearnAll", true,
+                "Show a Learn all button on chests that hold items the player has not learned yet. Learning an item " +
+                "unlocks the recipes and build pieces that need it, as if the player had picked it up.",
+                synced: true);
+
+            LearnTrophies = config.BindConfig("General", "LearnTrophies", true,
+                "Let the Learn all button learn trophies as well, which adds them to the player's trophy list.",
                 synced: true);
 
             ShowIndicators = config.BindConfig("Display", "ShowIndicators", true,

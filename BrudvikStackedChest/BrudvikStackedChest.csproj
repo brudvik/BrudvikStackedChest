@@ -83,6 +83,7 @@
     <Compile Include="Events\ItemTooltipPatchEvent.cs" />
     <Compile Include="Events\PlayerKnownItemPatchEvent.cs" />
     <Compile Include="Events\PlayerSpawnedPatchEvent.cs" />
+    <Compile Include="Events\UnlockMessagePatchEvent.cs" />
     <Compile Include="Extensions\ContainerExtension.cs" />
     <Compile Include="Extensions\InventoryExtension.cs" />
     <Compile Include="Extensions\Texture2dExtension.cs" />
@@ -96,12 +97,14 @@
     <Compile Include="Models\CustomChestModel.cs" />
     <Compile Include="Piece\ChestHoverPanel.cs" />
     <Compile Include="Piece\ChestIndicator.cs" />
+    <Compile Include="Piece\ChestLearnUi.cs" />
     <Compile Include="Piece\ChestProgressUi.cs" />
     <Compile Include="Piece\CustomChestManager.cs" />
     <Compile Include="Piece\CustomPieceConfigExtended.cs" />
     <Compile Include="Piece\CustomPieceExtended.cs" />
     <Compile Include="Patches\Containers\ContainerPatch.cs" />
     <Compile Include="Patches\Gui\InventoryGuiPatch.cs" />
+    <Compile Include="Patches\Gui\MessageHudPatch.cs" />
     <Compile Include="Patches\Inventories\InventoryPatch.cs" />
     <Compile Include="Patches\Players\PlayerPatch.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />

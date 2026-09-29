@@ -53,6 +53,7 @@ namespace BrudvikStackedChest
         private ChestSupply chestSupply = null!;
         private ChestProgressUi progressUi = null!;
         private ChestHoverPanel hoverPanel = null!;
+        private ChestLearnUi learnUi = null!;
 
         // Inventories do not know their container; the inventory patches need to recognize our chests.
         private readonly ConditionalWeakTable<Inventory, Container> chestInventories = new();
@@ -71,10 +72,12 @@ namespace BrudvikStackedChest
             chestSupply = new ChestSupply(settings, itemCatalog, worldProgress);
             progressUi = new ChestProgressUi(chestSupply, FindPiece);
             hoverPanel = new ChestHoverPanel(chestSupply, FindPiece, () => settings.ShowHoverPanel.Value);
+            learnUi = new ChestLearnUi(FindPiece, () => settings.LearnAll.Value, () => settings.LearnTrophies.Value);
 
             Config.SettingChanged += (_, _) => HandleSettingsChanged();
             SynchronizationManager.OnConfigurationSynchronized += (_, _) => HandleSettingsChanged();
             worldProgress.ItemUnlocked += HandleItemUnlockedByOthers;
+            learnUi.ItemsLearned += HandleItemsLearned;
             CommandManager.Instance.AddConsoleCommand(new ProgressCommand(chestSupply, progressUi, () => customPieces));
 
             // Register a callback to add cloned items when prefabs are registered
@@ -95,6 +98,10 @@ namespace BrudvikStackedChest
             InventoryGuiPatch.ContainerPanelUpdatedPatched += progressUi.HandleContainerPanelUpdated;
             PlayerPatch.PlayerSpawnedPatched += HandlePlayerSpawned;
             PlayerPatch.PlayerKnownItemPatched += HandlePlayerKnownItem;
+            InventoryGuiPatch.InventoryGridUpdatedPatched += learnUi.HandleGridUpdated;
+            InventoryGuiPatch.ItemTooltipPatched += learnUi.HandleItemTooltip;
+            InventoryGuiPatch.ContainerPanelUpdatedPatched += learnUi.HandleContainerPanelUpdated;
+            MessageHudPatch.UnlockMessagePatched += learnUi.HandleUnlockMessage;
 
             Jotunn.Logger.LogInfo($"{PluginName} v{PluginVersion} has loaded!");
         }
@@ -131,6 +138,14 @@ namespace BrudvikStackedChest
             if (piece == null) return;
 
             e!.Container.RemoveSuppliedItems(piece.CustomPieceConfig.ItemCategory, chestSupply);
+        }
+
+        /// <summary>
+        /// Shares items learned from a chest as discovered in Discovered mode, like items the player picks up.
+        /// </summary>
+        private void HandleItemsLearned(List<string> itemTokens)
+        {
+            if (settings.Mode.Value == ChestMode.Discovered) worldProgress.Discover(itemTokens);
         }
 
         /// <summary>
