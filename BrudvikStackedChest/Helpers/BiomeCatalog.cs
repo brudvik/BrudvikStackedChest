@@ -27,6 +27,8 @@ namespace BrudvikStackedChest.Helpers
         // Items found only in dungeons and other locations, whose contents are not loaded until a player is near.
         private static readonly Dictionary<string, Biome> LocationItems = new()
         {
+            { "Honey", Biome.Meadows },
+            { "QueenBee", Biome.Meadows },
             { "SurtlingCore", Biome.BlackForest },
             { "BoneFragments", Biome.BlackForest },
             { "TrophySkeleton", Biome.BlackForest },
@@ -135,6 +137,30 @@ namespace BrudvikStackedChest.Helpers
                 {
                     if (recipe != null && recipe.m_enabled && recipe.m_item != null) crafted.Add(recipe.m_item.name);
                 }
+
+                // Smelted, cooked and fermented items are made, even when a pot or chest happens to hold them.
+                foreach (var prefab in ZNetScene.instance.m_prefabs)
+                {
+                    if (prefab == null) continue;
+
+                    if (prefab.TryGetComponent(out Smelter smelter) && smelter.m_conversion != null)
+                    {
+                        foreach (var conversion in smelter.m_conversion) AddCrafted(conversion?.m_to);
+                    }
+                    if (prefab.TryGetComponent(out CookingStation cooking) && cooking.m_conversion != null)
+                    {
+                        foreach (var conversion in cooking.m_conversion) AddCrafted(conversion?.m_to);
+                    }
+                    if (prefab.TryGetComponent(out Fermenter fermenter) && fermenter.m_conversion != null)
+                    {
+                        foreach (var conversion in fermenter.m_conversion) AddCrafted(conversion?.m_to);
+                    }
+                }
+            }
+
+            private void AddCrafted(ItemDrop? item)
+            {
+                if (item != null) crafted.Add(item.name);
             }
 
             public void AddVegetation(ZoneSystem zoneSystem)
@@ -167,9 +193,22 @@ namespace BrudvikStackedChest.Helpers
                         if (!string.IsNullOrEmpty(spawn.m_requiredPersistentEvent)) continue;
 
                         placements.Add(new Placement(spawn.m_prefab, spawn.m_biome, $"spawn {spawn.m_prefab.name} in {list.name}",
-                            $"Spawn '{spawn.m_name}' list='{list.name}' globalKey='{spawn.m_requiredGlobalKey}' environments={spawn.m_requiredEnvironments?.Count ?? 0}"));
+                            $"Spawn '{spawn.m_name}' list='{list.name}' globalKey='{spawn.m_requiredGlobalKey}' environments={spawn.m_requiredEnvironments?.Count ?? 0}",
+                            spawn.m_requiredGlobalKey));
                     }
                 }
+
+                // A creature that also spreads to other biomes once a boss is defeated only lives where it spawns from the start.
+                var ungated = new HashSet<GameObject>(placements.Where(placement => string.IsNullOrEmpty(placement.GlobalKey)).Select(placement => placement.Prefab));
+                placements.RemoveAll(placement =>
+                {
+                    var later = !string.IsNullOrEmpty(placement.GlobalKey) && ungated.Contains(placement.Prefab);
+                    if (later && logBroadSources)
+                    {
+                        Jotunn.Logger.LogInfo($"Boss-gated spawn (ignored): {placement.Details} prefab={placement.Prefab.name} biomes={placement.Biomes}");
+                    }
+                    return later;
+                });
                 AddPlacements(placements);
             }
 
@@ -328,12 +367,13 @@ namespace BrudvikStackedChest.Helpers
 
             private sealed class Placement
             {
-                public Placement(GameObject prefab, Biome biomes, string source, string details)
+                public Placement(GameObject prefab, Biome biomes, string source, string details, string? globalKey = null)
                 {
                     Prefab = prefab;
                     Biomes = biomes;
                     Source = source;
                     Details = details;
+                    GlobalKey = globalKey;
                 }
 
                 public GameObject Prefab { get; }
@@ -343,6 +383,8 @@ namespace BrudvikStackedChest.Helpers
                 public string Source { get; }
 
                 public string Details { get; }
+
+                public string? GlobalKey { get; }
             }
         }
     }
