@@ -15,6 +15,11 @@ namespace BrudvikStackedChest.Helpers
         // Configuration for the custom piece
         public readonly CustomPieceConfigExtended CustomPieceConfig;
 
+        /// <summary>
+        /// The name of the chest prefab, which placed chests carry in their object name.
+        /// </summary>
+        public string PrefabName { get; }
+
         // Indicates whether the piece has been spawned
         public bool Spawned { get; set; } = false;
 
@@ -35,6 +40,7 @@ namespace BrudvikStackedChest.Helpers
         public CustomPieceExtended(string name, string prefabName, CustomPieceConfigExtended config) : base(name, prefabName, config)
         {
             this.CustomPieceConfig = config;
+            this.PrefabName = name;
 
             // Initialize properties
             this.Color = Color.white; 

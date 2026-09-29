@@ -42,7 +42,7 @@ namespace BrudvikStackedChest.Piece
             // Create a new configuration for the custom chest piece
             var pieceConfig = new CustomPieceConfigExtended
             {
-                Name = model.Name, 
+                Name = model.DisplayName, 
                 Description = model.Description, 
                 PieceTable = "Hammer", 
                 Category = "Chests", 

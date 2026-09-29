@@ -1,5 +1,6 @@
 using BrudvikStackedChest.Constants;
 using BrudvikStackedChest.Helpers;
+using BrudvikStackedChest.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -91,11 +92,11 @@ namespace BrudvikStackedChest.Piece
             var items = inventory.GetAllItems().OrderBy(item => item.m_gridPos.y).ThenBy(item => item.m_gridPos.x).ToList();
             var slots = inventory.GetWidth() * inventory.GetHeight();
 
-            var summary = items.Count == 0 ? "Empty" : $"{items.Count}/{slots} slots";
+            var summary = items.Count == 0 ? Texts.Get("bsc_hover_empty") : Texts.Get("bsc_hover_slots", items.Count, slots);
             if (mode != ChestMode.Full && category != ChestCategory.None)
             {
                 supply.CountProgress(category, out var supplied, out var total);
-                if (total > 0) summary += $"   <color={Gold}>{supplied}/{total} unlimited</color>";
+                if (total > 0) summary += $"   <color={Gold}>{Texts.Get("bsc_unlimited_count", $"{supplied}/{total}")}</color>";
             }
             header!.text = summary;
 
@@ -118,7 +119,7 @@ namespace BrudvikStackedChest.Piece
 
             var hidden = items.Count - cells.Count;
             more!.gameObject.SetActive(hidden > 0);
-            if (hidden > 0) more.text = $"+{hidden} more";
+            if (hidden > 0) more.text = Texts.Get("bsc_hover_more", hidden);
         }
 
         private bool TryBuild()

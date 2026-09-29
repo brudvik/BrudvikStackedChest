@@ -1,5 +1,6 @@
 using BrudvikStackedChest.Helpers;
 using BrudvikStackedChest.Piece;
+using BrudvikStackedChest.Utils;
 using Jotunn.Entities;
 using System;
 using System.Collections.Generic;
@@ -32,7 +33,7 @@ namespace BrudvikStackedChest.Commands
         public override string Name => "bsc_progress";
 
         /// <inheritdoc/>
-        public override string Help => "Shows how many items of each BrudvikStackedChest chest are unlimited";
+        public override string Help => Texts.Get("bsc_cmd_help");
 
         /// <inheritdoc/>
         public override void Run(string[] args)
@@ -45,10 +46,10 @@ namespace BrudvikStackedChest.Commands
         {
             if (context == null) return;
 
-            context.AddString($"Chest mode: {supply.Mode}");
+            context.AddString(Texts.Get("bsc_cmd_mode", supply.Mode));
             if (!supply.IsReady)
             {
-                context.AddString("The world progress has not been received from the server yet.");
+                context.AddString(Texts.Get("bsc_cmd_not_ready"));
                 return;
             }
 
@@ -57,8 +58,8 @@ namespace BrudvikStackedChest.Commands
                 var category = piece.CustomPieceConfig.ItemCategory;
                 if (category == Constants.ChestCategory.None) continue;
 
-                var summary = progressUi.GetSummary(category) ?? "stores items like a normal chest";
-                context.AddString($"{piece.Tooltip}: {summary}");
+                var summary = progressUi.GetSummary(category) ?? Texts.Get("bsc_cmd_normal");
+                context.AddString($"{Texts.Localize(piece.Tooltip)}: {summary}");
             }
         }
     }

@@ -2,6 +2,7 @@ using BrudvikStackedChest.Constants;
 using BrudvikStackedChest.Events;
 using BrudvikStackedChest.Extensions;
 using BrudvikStackedChest.Helpers;
+using BrudvikStackedChest.Utils;
 using System;
 using System.Collections.Generic;
 using TMPro;
@@ -116,7 +117,7 @@ namespace BrudvikStackedChest.Piece
             }
             else if (category != ChestCategory.None)
             {
-                e.Text += "\nStores items like a normal chest";
+                e.Text += $"\n{Texts.Get("bsc_hover_normal")}";
                 return;
             }
 
@@ -139,7 +140,7 @@ namespace BrudvikStackedChest.Piece
             if (category == ChestCategory.None) return null;
 
             supply.CountProgress(category, out var supplied, out var total);
-            return total == 0 ? null : $"<color={Gold}>{supplied}/{total}</color> unlimited";
+            return total == 0 ? null : Texts.Get("bsc_unlimited_count", $"<color={Gold}>{supplied}/{total}</color>");
         }
 
         private bool TryGetOpenChest(InventoryGrid grid, out ChestCategory category)

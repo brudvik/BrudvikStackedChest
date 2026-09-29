@@ -1,5 +1,6 @@
 using BrudvikStackedChest.Constants;
 using BrudvikStackedChest.Helpers;
+using BrudvikStackedChest.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -127,7 +128,7 @@ namespace BrudvikStackedChest.Extensions
                 if (Player.m_localPlayer != null)
                 {
                     Player.m_localPlayer.Message(MessageHud.MessageType.Center,
-                        $"{Localization.instance.Localize(itemShared.m_name)} is now unlimited");
+                        Texts.Get("bsc_msg_unlimited", Texts.Localize(itemShared.m_name)));
                 }
             }
         }

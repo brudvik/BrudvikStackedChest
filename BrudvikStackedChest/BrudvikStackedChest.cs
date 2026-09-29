@@ -63,6 +63,8 @@ namespace BrudvikStackedChest
         /// </summary>
         private void Awake()
         {
+            Texts.Register(PluginName);
+
             settings = new PluginSettings(Config);
             itemCatalog = new ItemCatalog(settings);
             worldProgress = new WorldProgress(PluginName);
@@ -116,7 +118,7 @@ namespace BrudvikStackedChest
         {
             if (Player.m_localPlayer == null) return;
 
-            Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, $"{chestSupply.GetDisplayName(prefabName)} is now unlimited");
+            Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, Texts.Get("bsc_msg_unlimited", chestSupply.GetDisplayName(prefabName)));
         }
 
         /// <summary>
@@ -239,7 +241,7 @@ namespace BrudvikStackedChest
 
             foreach (var piece in customPieces)
             {
-                if (container.name.Contains(piece.CustomPieceConfig.Name)) return piece;
+                if (container.name.Contains(piece.PrefabName)) return piece;
             }
             return null;
         }
@@ -254,8 +256,8 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSWoodChest",
-                    DisplayName = "Wood Chest",
-                    Description = "A chest filled with wood materials",
+                    DisplayName = "$bsc_chest_wood",
+                    Description = "$bsc_chest_wood_desc",
                     Icon = "strg_049_round.png",
                     Color = SharedUtils.ColorFromRGB(0, 0, 0, 0.8f),
                     Category = ChestCategory.Wood
@@ -266,8 +268,8 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSStoneChest",
-                    DisplayName = "Stone Chest",
-                    Description = "A chest filled with stone materials",
+                    DisplayName = "$bsc_chest_stone",
+                    Description = "$bsc_chest_stone_desc",
                     Icon = "strg_009_round.png",
                     Color = SharedUtils.ColorFromRGB(135, 135, 135, 0.8f),
                     Category = ChestCategory.Stone
@@ -278,8 +280,8 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSMetalChest",
-                    DisplayName = "Metal Chest",
-                    Description = "A chest filled with metal materials",
+                    DisplayName = "$bsc_chest_metal",
+                    Description = "$bsc_chest_metal_desc",
                     Icon = "strg_082_round.png",
                     Color = SharedUtils.ColorFromRGB(163, 34, 24, 0.8f),
                     Category = ChestCategory.Metal
@@ -290,8 +292,8 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSFoodChest",
-                    DisplayName = "Food Chest",
-                    Description = "A chest filled with food ingredients",
+                    DisplayName = "$bsc_chest_food",
+                    Description = "$bsc_chest_food_desc",
                     Icon = "strg_046_round.png",
                     Color = SharedUtils.ColorFromRGB(112, 81, 44, 0.8f),
                     Rows = 10,
@@ -303,8 +305,8 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSMaterialChest",
-                    DisplayName = "Material Chest",
-                    Description = "A chest filled with various materials",
+                    DisplayName = "$bsc_chest_material",
+                    Description = "$bsc_chest_material_desc",
                     Icon = "strg_088_round.png",
                     Color = SharedUtils.ColorFromRGB(44, 47, 112, 0.8f),
                     Category = ChestCategory.Material
@@ -315,8 +317,8 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSAnimalChest",
-                    DisplayName = "Animal Chest",
-                    Description = "A chest filled with various animal materials",
+                    DisplayName = "$bsc_chest_animal",
+                    Description = "$bsc_chest_animal_desc",
                     Icon = "strg_012_round.png",
                     Color = SharedUtils.ColorFromRGB(181, 178, 27, 0.8f),
                     Category = ChestCategory.Animal
@@ -327,8 +329,8 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSSeedChest",
-                    DisplayName = "Seed Chest",
-                    Description = "A chest filled with various seeds",
+                    DisplayName = "$bsc_chest_seed",
+                    Description = "$bsc_chest_seed_desc",
                     Icon = "strg_029_round.png",
                     Color = SharedUtils.ColorFromRGB(27, 181, 89, 0.8f),
                     Category = ChestCategory.Seed
@@ -339,8 +341,8 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSTrophyChest",
-                    DisplayName = "Trophy Chest",
-                    Description = "A chest filled with trophies",
+                    DisplayName = "$bsc_chest_trophy",
+                    Description = "$bsc_chest_trophy_desc",
                     Icon = "strg_091_round.png",
                     Color = SharedUtils.ColorFromRGB(21, 122, 117, 0.8f),
                     Category = ChestCategory.Trophy
@@ -351,8 +353,8 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSTreasureChest",
-                    DisplayName = "Treasure Chest",
-                    Description = "A chest filled with treasures and riches",
+                    DisplayName = "$bsc_chest_treasure",
+                    Description = "$bsc_chest_treasure_desc",
                     Icon = "strg_098_round.png",
                     Color = SharedUtils.ColorFromRGB(228, 237, 95, 0.8f),
                     Category = ChestCategory.Treasure
@@ -363,8 +365,8 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSToolsChest",
-                    DisplayName = "Tools Chest",
-                    Description = "A chest filled with tools",
+                    DisplayName = "$bsc_chest_tools",
+                    Description = "$bsc_chest_tools_desc",
                     Icon = "strg_039_round.png",
                     Color = SharedUtils.ColorFromRGB(51, 21, 122, 0.8f),
                     Category = ChestCategory.Tools
@@ -375,8 +377,8 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSArmorChest",
-                    DisplayName = "Armor Chest",
-                    Description = "A chest filled with armor sets from all tiers",
+                    DisplayName = "$bsc_chest_armor",
+                    Description = "$bsc_chest_armor_desc",
                     Icon = "strg_014_round.png",
                     Color = SharedUtils.ColorFromRGB(120, 80, 40, 0.8f),
                     Category = ChestCategory.Armor
@@ -387,8 +389,8 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSWeaponChest",
-                    DisplayName = "Weapon Chest",
-                    Description = "A chest filled with weapons from all biomes",
+                    DisplayName = "$bsc_chest_weapon",
+                    Description = "$bsc_chest_weapon_desc",
                     Icon = "strg_032_round.png",
                     Color = SharedUtils.ColorFromRGB(180, 50, 50, 0.8f),
                     Rows = 10,
@@ -401,8 +403,8 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSPotionChest",
-                    DisplayName = "Potion Chest",
-                    Description = "A chest filled with meads and potions",
+                    DisplayName = "$bsc_chest_potion",
+                    Description = "$bsc_chest_potion_desc",
                     Icon = "strg_004_round.png",
                     Color = SharedUtils.ColorFromRGB(200, 100, 200, 0.8f),
                     Category = ChestCategory.Potion
@@ -413,8 +415,8 @@ namespace BrudvikStackedChest
                 new CustomChestModel()
                 {
                     Name = "BSEmptyChest",
-                    DisplayName = "Everlasting Chest",
-                    Description = "A empty chest, add items to make them last forever",
+                    DisplayName = "$bsc_chest_empty",
+                    Description = "$bsc_chest_empty_desc",
                     Icon = "strg_010_round.png",
                     Color = SharedUtils.ColorFromRGB(45, 45, 79, 0.8f)
                 }

@@ -1,6 +1,7 @@
 using BrudvikStackedChest.Configuration;
 using BrudvikStackedChest.Constants;
 using BrudvikStackedChest.Extensions;
+using BrudvikStackedChest.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -197,16 +198,16 @@ namespace BrudvikStackedChest.Helpers
         public string GetStatus(ChestCategory category, ItemDrop.ItemData item, int stored)
         {
             var mode = Mode;
-            if (IsSupplied(mode, category, item)) return "Unlimited";
-            if (item.m_dropPrefab == null) return "Stored normally";
+            if (IsSupplied(mode, category, item)) return Texts.Get("bsc_status_unlimited");
+            if (item.m_dropPrefab == null) return Texts.Get("bsc_status_stored");
 
             var name = item.m_dropPrefab.name;
-            if (!BelongsIn(category, name)) return "Stored normally, it does not belong in this chest";
-            if (!IsStackable(item.m_shared)) return "Stored normally, items that do not stack are never duplicated";
-            if (mode == ChestMode.Discovered) return "Becomes unlimited once discovered";
+            if (!BelongsIn(category, name)) return Texts.Get("bsc_status_wrong_chest");
+            if (!IsStackable(item.m_shared)) return Texts.Get("bsc_status_not_stackable");
+            if (mode == ChestMode.Discovered) return Texts.Get("bsc_status_discover");
 
             var missing = Math.Max(0, GetUnlockAmount(item.m_shared) - stored);
-            return $"Store {missing} more to make it unlimited";
+            return Texts.Get("bsc_status_store_more", missing);
         }
 
         /// <summary>
