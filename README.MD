@@ -1,5 +1,14 @@
 ﻿# BrudvikStackedChest
 
+> **⚠️ This mod is outdated and no longer maintained.** The chests are now part of [BrudvikWhiteHilt](https://github.com/brudvik/BrudvikWhiteHilt) (from v0.29.0), see [Restocking chests](https://github.com/brudvik/BrudvikWhiteHilt/blob/master/docs/chests.md).
+>
+> Placed chests and their contents carry over. To switch:
+> 1. Back up your world.
+> 2. Install BrudvikWhiteHilt 0.29.0 or newer on the server and every client while BrudvikStackedChest is still installed, and start the world once.
+> 3. Remove BrudvikStackedChest, but **keep** `BepInEx/config/com.jotunn.BrudvikStackedChest.cfg` and the `BepInEx/config/BrudvikStackedChest/` folder. White Hilt takes over the settings (above all `Mode`) and the world progress from them.
+>
+> Do not run both mods side by side for longer than the switch: while BrudvikStackedChest is loaded, White Hilt leaves the chests to it.
+
 ![Display of the mod in use](https://raw.githubusercontent.com/brudvik/BrudvikStackedChest/refs/heads/master/mod-example-chests.png)
 
 ## Overview
